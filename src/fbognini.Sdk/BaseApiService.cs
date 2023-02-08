@@ -95,6 +95,11 @@ namespace fbognini.Sdk
             await SetAccessToken();
         }
 
+        protected virtual async Task<HttpResponseMessage> ExecuteAction(Func<Task<HttpResponseMessage>> action)
+        {
+            return await action();
+        }
+
         protected virtual async Task<T> ProcessApi<T>(Func<Task<HttpResponseMessage>> action)
         {
             var _options = new JsonSerializerOptions()
@@ -151,11 +156,12 @@ namespace fbognini.Sdk
                     {
                         await SetAccessToken();
                     }
-                    message = await AuthenticationEnsuringPolicy.ExecuteAsync(() => action());
+
+                    message = await AuthenticationEnsuringPolicy.ExecuteAsync(() => ExecuteAction(action));
                 }
                 else
                 {
-                    message = await action();
+                    message = await ExecuteAction(action);
                 }
 
                 int statusCode = (int)message.StatusCode;
@@ -173,6 +179,7 @@ namespace fbognini.Sdk
                 { 
                     await httpErrorHandler.HandleResponse(message);
                 }
+
                 var response = (await message.Content.ReadFromJsonAsync<T>(options))!;
 
                 propertys.Add("Response", JsonSerializer.Serialize(response, _options));
@@ -305,7 +312,7 @@ namespace fbognini.Sdk
 
         protected virtual async Task<ApiResult> ProcessApiResult(Func<Task<HttpResponseMessage>> action)
         {
-            var response = await action();
+            var response = await ExecuteAction(action);
             if (response.IsSuccessStatusCode)
             {
                 return new ApiResult
@@ -331,14 +338,14 @@ namespace fbognini.Sdk
         protected virtual async Task<ApiResult<T>> ProcessApiResult<T>(Func<Task<HttpResponseMessage>> action)
            where T : class
         {
-            var response = await action();
+            var response = await ExecuteAction(action);
             if (response.IsSuccessStatusCode)
             {
                 return new ApiResult<T>
                 {
                     IsSuccess = true,
                     StatusCode = response.StatusCode,
-                    Response = await response.Content.ReadFromJsonAsync<T>(options)
+                    Response = (await response.Content.ReadFromJsonAsync<T>(options))!
                 };
             }
 
