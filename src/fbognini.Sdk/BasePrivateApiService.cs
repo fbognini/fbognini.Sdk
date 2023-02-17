@@ -17,7 +17,7 @@ namespace fbognini.Sdk
 {
     public abstract partial class BaseApiService
     {
-        private async Task<HttpResponseMessage> SendAction(Func<Task<HttpResponseMessage>> action)
+        protected async Task<HttpResponseMessage> SendAction(Func<Task<HttpResponseMessage>> action)
         {
             var baseAddress = client.BaseAddress?.ToString() ?? string.Empty;
             var sdk = this.GetType().Namespace!;

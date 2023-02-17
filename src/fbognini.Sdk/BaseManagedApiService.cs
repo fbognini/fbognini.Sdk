@@ -89,7 +89,7 @@ namespace fbognini.Sdk
         {
             // client.PostAsJsonAsync don't use Header Content-type application/json
             var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            return await PostApiResult(url, content);
+            return await PostApiResult(url, content as HttpContent);
         }
 
         protected async Task<ApiResult<T>> PostApiResult<T, TRequest>(string url, TRequest request)
@@ -97,7 +97,7 @@ namespace fbognini.Sdk
         {
             // client.PostAsJsonAsync don't use Header Content-type application/json
             var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            return await PostApiResult<T>(url, content);
+            return await PostApiResult<T>(url, content as HttpContent);
         }
 
         protected async Task<ApiResult<T>> PutApiResult<T, TRequest>(string url, TRequest request)
