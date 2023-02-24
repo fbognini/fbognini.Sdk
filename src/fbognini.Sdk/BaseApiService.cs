@@ -33,7 +33,7 @@ namespace fbognini.Sdk
                     retryCount: 1,
                     onRetryAsync: async (outcome, retryNumber, context) =>
                     {
-                        await ReloadAccessToken();
+                        await ReloadAuthorization();
                     }
                 );
 
@@ -83,16 +83,22 @@ namespace fbognini.Sdk
                 => client.PutAsJsonAsync(url, request, options));
         }
 
-        protected virtual async Task SetAccessToken()
+        protected virtual async Task SetAuthorization()
         {
             client.DefaultRequestHeaders.Authorization
                  = new AuthenticationHeaderValue("Bearer", await currentUserService!.GetAccessToken());
         }
 
-        protected virtual async Task ReloadAccessToken()
+        protected virtual Task ResetAuthorization()
+        {
+            client.DefaultRequestHeaders.Authorization = null;
+            return Task.CompletedTask;
+        }
+
+        protected virtual async Task ReloadAuthorization()
         {
             await currentUserService!.ReloadAccessToken();
-            await SetAccessToken();
+            await SetAuthorization();
         }
 
         protected virtual async Task<HttpResponseMessage> ExecuteAction(Func<Task<HttpResponseMessage>> action)

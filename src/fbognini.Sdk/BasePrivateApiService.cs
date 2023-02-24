@@ -70,7 +70,11 @@ namespace fbognini.Sdk
                 {
                     if (await currentUserService.IsAuthenticated())
                     {
-                        await SetAccessToken();
+                        await SetAuthorization();
+                    }
+                    else
+                    {
+                        await ResetAuthorization();
                     }
 
                     message = await AuthenticationEnsuringPolicy.ExecuteAsync(() => ExecuteAction(action));
