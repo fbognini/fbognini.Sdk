@@ -58,23 +58,30 @@ namespace fbognini.Sdk
                 => client.DeleteAsync(url));
         }
 
-        protected async Task<T> PostApi<T>(string url)
+        protected async Task PostApi(string url, HttpContent? content = null)
         {
-            return await ProcessApi<T>(()
-                => client.PostAsync(url, null));
+            await ProcessApi(()
+                => client.PostAsync(url, content));
         }
 
-        protected async Task<T> PostApi<T>(string url, HttpContent? content)
+        protected async Task<T> PostApi<T>(string url, HttpContent? content = null)
         {
             return await ProcessApi<T>(()
                 => client.PostAsync(url, content));
+        }
+
+        protected async Task PostApi<TRequest>(string url, TRequest request)
+        {
+            // client.PostAsJsonAsync don't use Header Content-type application/json
+            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
+            await PostApi(url, content as HttpContent);
         }
 
         protected async Task<T> PostApi<T, TRequest>(string url, TRequest request)
         {
             // client.PostAsJsonAsync don't use Header Content-type application/json
             var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            return await PostApi<T>(url, content);
+            return await PostApi<T>(url, content as HttpContent);
         }
 
         protected async Task<T> PutApi<T, TRequest>(string url, TRequest request)
@@ -104,6 +111,12 @@ namespace fbognini.Sdk
         protected virtual async Task<HttpResponseMessage> ExecuteAction(Func<Task<HttpResponseMessage>> action)
         {
             return await action();
+        }
+
+
+        protected virtual async Task ProcessApi(Func<Task<HttpResponseMessage>> action)
+        {
+            await SendAction(action);
         }
 
         protected virtual async Task<T> ProcessApi<T>(Func<Task<HttpResponseMessage>> action)

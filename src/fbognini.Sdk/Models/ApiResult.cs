@@ -18,14 +18,12 @@ namespace fbognini.Sdk
     }
 
     public class ApiResult<TResponse> : ApiResult
-        where TResponse : class
     {
         public TResponse Response { get; set; }
     }
 
     public class ApiResult<TPagination, TResponse> : ApiResult 
-        where TPagination : PaginationResponse<TResponse> 
-        where TResponse : class
+        where TPagination : PaginationResponse<TResponse>
     {
         public List<TResponse> Response { get; set; }
         public Pagination Pagination { get; set; }
@@ -34,7 +32,6 @@ namespace fbognini.Sdk
 
 
     public class PaginationResponse<TClass>
-        where TClass : class
     {
         public PaginationResponse()
         {

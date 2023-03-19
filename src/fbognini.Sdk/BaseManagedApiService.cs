@@ -17,8 +17,6 @@ namespace fbognini.Sdk
 {
     public abstract partial class BaseApiService
     {
-        #region ApiResult
-
         protected async Task<ApiResult> GetApiResult(string url)
         {
             return await ProcessApiResult(()
@@ -53,33 +51,18 @@ namespace fbognini.Sdk
         }
 
         protected async Task<ApiResult<T>> DeleteApiResult<T, TRequest>(string url, TRequest request)
-            where T : class
         {
             return await ProcessApiResult<T>(()
                 => client.DeleteAsJsonAsync(url, request));
         }
 
-        protected async Task<ApiResult> PostApiResult(string url)
-        {
-            return await ProcessApiResult(()
-                => client.PostAsync(url, null));
-        }
-
-        protected async Task<ApiResult<T>> PostApiResult<T>(string url)
-           where T : class
-        {
-            return await ProcessApiResult<T>(()
-                => client.PostAsync(url, null));
-        }
-
-        protected async Task<ApiResult> PostApiResult(string url, HttpContent? content)
+        protected async Task<ApiResult> PostApiResult(string url, HttpContent? content = null)
         {
             return await ProcessApiResult(()
                 => client.PostAsync(url, content));
         }
 
-        protected async Task<ApiResult<T>> PostApiResult<T>(string url, HttpContent? content)
-            where T : class
+        protected async Task<ApiResult<T>> PostApiResult<T>(string url, HttpContent? content = null)
         {
             return await ProcessApiResult<T>(()
                 => client.PostAsync(url, content));
@@ -93,7 +76,6 @@ namespace fbognini.Sdk
         }
 
         protected async Task<ApiResult<T>> PostApiResult<T, TRequest>(string url, TRequest request)
-            where T : class
         {
             // client.PostAsJsonAsync don't use Header Content-type application/json
             var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
@@ -101,7 +83,6 @@ namespace fbognini.Sdk
         }
 
         protected async Task<ApiResult<T>> PutApiResult<T, TRequest>(string url, TRequest request)
-           where T : class
         {
             return await ProcessApiResult<T>(()
                 => client.PutAsJsonAsync(url, request));
@@ -128,7 +109,6 @@ namespace fbognini.Sdk
         }
 
         protected virtual async Task<ApiResult<T>> ProcessApiResult<T>(Func<Task<HttpResponseMessage>> action)
-           where T : class
         {
             var response = await SendAction(action);
             if (response.IsSuccessStatusCode)
@@ -148,7 +128,5 @@ namespace fbognini.Sdk
                 Message = await response.Content.ReadAsStringAsync()
             };
         }
-
-        #endregion
     }
 }
