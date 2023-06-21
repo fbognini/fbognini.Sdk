@@ -1,4 +1,5 @@
-﻿using fbognini.Sdk.Extensions;
+﻿using fbognini.Sdk.Exceptions;
+using fbognini.Sdk.Extensions;
 using fbognini.Sdk.Interfaces;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -12,21 +13,49 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
+using static fbognini.Sdk.BaseApiService;
 
 namespace fbognini.Sdk
 {
     public abstract partial class BaseApiService
     {
-        protected async Task<HttpResponseMessage> SendAction(Func<Task<HttpResponseMessage>> action)
+        public class LoggingProperys
         {
-            var baseAddress = client.BaseAddress?.ToString() ?? string.Empty;
-            var sdk = this.GetType().Namespace!;
+            public bool IsSdk => true;
+            public string Sdk { get; set; }
+            public string BaseAddress { get; set; }
+            public string Method { get; set; }
+            public string RequestUrl { get; set; }
+            public string Uri => $"{BaseAddress}{RequestUrl}";
+            public string RawRequest { get; set; }
+            public bool IsSuccessStatusCode { get; set; }
+            public int StatusCode { get; set; }
+            public string RawResponse { get; set; }
+            public IEnumerable<KeyValuePair<string, string>> ResponseHeaders { get; set; }
 
-            var propertys = new Dictionary<string, object>()
+            public Dictionary<string, object> ToLoggingDictionary() => new Dictionary<string, object>()
             {
                 ["IsSdk"] = true,
-                ["Sdk"] = sdk,
-                ["BaseAddress"] = baseAddress
+                [nameof(Sdk)] = Sdk,
+                [nameof(BaseAddress)] = BaseAddress,
+                [nameof(Method)] = Method,
+                [nameof(RequestUrl)] = RequestUrl,
+                [nameof(Uri)] = Uri,
+                [nameof(RawRequest)] = RawRequest,
+                [nameof(IsSuccessStatusCode)] = IsSuccessStatusCode,
+                [nameof(StatusCode)] = StatusCode,
+                [nameof(RawResponse)] = RawResponse,
+                [nameof(ResponseHeaders)] = ResponseHeaders,
+            };
+        }
+
+
+        protected async Task<HttpResponseMessage> SendAction(Func<Task<HttpResponseMessage>> action)
+        {
+            var loggingPropertys = new LoggingProperys()
+            {
+                Sdk = this.GetType().Namespace!,
+                BaseAddress = client.BaseAddress?.ToString() ?? string.Empty,
             };
 
             var index = action.Method.Name.IndexOf("ApiResult>");
@@ -35,35 +64,29 @@ namespace fbognini.Sdk
                 index = action.Method.Name.IndexOf("Api>");
             }
 
-            string method = action.Method.Name[1..index].ToUpper();
-            propertys.Add("Method", method);
+            loggingPropertys.Method = action.Method.Name[1..index].ToUpper();
 
             var type = action.Target!.GetType();
 
-            var url = type.GetField("url")!.GetValue(action.Target)!.ToString()!;
-            var uri = $"{baseAddress}{url}";
-            propertys.Add("RequestUrl", url);
-            propertys.Add("Uri", uri);
+            loggingPropertys.RequestUrl = type.GetField("url")!.GetValue(action.Target)!.ToString()!;
+
             var contentField = type.GetField("content");
             if (contentField != null)
             {
                 var content = contentField.GetValue(action.Target)!;
                 if (content is JsonContent json)
                 {
-                    propertys.Add("Request", JsonSerializer.Serialize(json.Value, options));
+                    loggingPropertys.RawRequest = JsonSerializer.Serialize(json.Value, options);
                 }
                 else if (content is ByteArrayContent byteArray)
                 {
-                    propertys.Add("Request", await byteArray.ReadAsStringAsync());
+                    loggingPropertys.RawRequest = await byteArray.ReadAsStringAsync();
                 }
             }
 
             try
             {
-                using (logger.BeginScope(propertys))
-                {
-                    logger.LogInformation("{Sdk} requesting {Method} {Uri}", sdk, method, uri);
-                }
+                LogRequest(loggingPropertys);
 
                 HttpResponseMessage message;
                 if (currentUserService != null)
@@ -84,35 +107,24 @@ namespace fbognini.Sdk
                     message = await ExecuteAction(action);
                 }
 
-                int statusCode = (int)message.StatusCode;
+                loggingPropertys.IsSuccessStatusCode = message.IsSuccessStatusCode;
+                loggingPropertys.StatusCode = (int)message.StatusCode;
 
-                var headers = GetResponseHeaders(message.Headers).ToList();
-                propertys.Add("ResponseHeaders", headers);
-
-                propertys.Add("IsSuccessStatusCode", message.IsSuccessStatusCode);
-                propertys.Add("StatusCode", statusCode);
-
-                var rawResponse = await message.Content.ReadAsStringAsync();
-                propertys.Add("RawResponse", rawResponse);
+                loggingPropertys.RawResponse = await message.Content.ReadAsStringAsync();
+                loggingPropertys.ResponseHeaders = GetResponseHeaders(message.Headers).ToList();
 
                 if (httpErrorHandler != null)
                 {
                     await httpErrorHandler.HandleResponse(message);
                 }
 
-                using (logger.BeginScope(propertys))
-                {
-                    logger.LogInformation("{Sdk} {Method} {Uri} responded {StatusCode}", sdk, method, uri, statusCode);
-                }
+                LogResponse(loggingPropertys);
 
                 return message;
             }
             catch (Exception ex)
             {
-                using (logger.BeginScope(propertys))
-                {
-                    logger.LogError(ex, "{Sdk} failed to ask for {Method} {Uri}", sdk, method, uri);
-                }
+                LogException(loggingPropertys, ex);
 
                 throw;
             }
@@ -136,5 +148,35 @@ namespace fbognini.Sdk
             }
         }
 
+        protected virtual void LogRequest(LoggingProperys loggingPropertys)
+        {
+            using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
+            {
+                logger.LogInformation("{Sdk} requesting {Method} {Uri}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri);
+            }
+        }
+
+        protected virtual void LogResponse(LoggingProperys loggingPropertys)
+        {
+            using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
+            {
+                logger.LogInformation("{Sdk} {Method} {Uri} responded {StatusCode}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri, loggingPropertys.StatusCode);
+            }
+        }
+
+        protected virtual void LogException(LoggingProperys loggingPropertys, Exception exception)
+        {
+            using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
+            {
+                if (exception is ApiException apiException)
+                {
+                    logger.LogWarning("{Sdk} {Method} {Uri} responded {StatusCode}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri, apiException.StatusCode);
+                }
+                else
+                {
+                    logger.LogError(exception, "{Sdk} failed to ask for {Method} {Uri}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri);
+                }
+            }
+        }
     }
 }

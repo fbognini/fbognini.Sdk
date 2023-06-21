@@ -11,7 +11,7 @@ namespace fbognini.Sdk
     {
         public bool IsSuccess { get; set; }
         public HttpStatusCode StatusCode { get; set; }
-        public string Message { get; set; }
+        public string? Message { get; set; }
 
         public IDictionary<string, string[]> Validations { get; set; }
         public Dictionary<string, object> AdditionalData { get; set; }
@@ -19,7 +19,7 @@ namespace fbognini.Sdk
 
     public class ApiResult<TResponse> : ApiResult
     {
-        public TResponse Response { get; set; }
+        public TResponse? Response { get; set; }
     }
 
     public class ApiResult<TPagination, TResponse> : ApiResult 

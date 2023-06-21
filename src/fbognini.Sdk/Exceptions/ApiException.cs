@@ -9,9 +9,9 @@ namespace fbognini.Sdk.Exceptions
     public class ApiException : Exception
     {
         public string Url { get; }
-        public string Response { get; }
+        public string? Response { get; }
         public int StatusCode { get; }
-        public ApiResult Result { get; }
+        public ApiResult? Result { get; }
 
         public ApiException(string url, ApiResult result)
         {

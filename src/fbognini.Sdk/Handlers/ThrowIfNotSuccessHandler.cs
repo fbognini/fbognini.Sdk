@@ -15,7 +15,7 @@ namespace fbognini.Sdk.Handlers
         {
             if (response.IsSuccessStatusCode == false)
             {
-                throw new ApiException(response.RequestMessage.RequestUri.ToString(), await response.Content.ReadFromJsonAsync<ApiResult>());
+                throw new ApiException(response.RequestMessage!.RequestUri!.ToString(), (await response.Content.ReadFromJsonAsync<ApiResult>())!);
             }
         }
     }
@@ -26,7 +26,7 @@ namespace fbognini.Sdk.Handlers
         {
             if (response.IsSuccessStatusCode == false)
             {
-                throw new ApiException(response.RequestMessage.RequestUri.ToString(), (int)response.StatusCode, await response.Content.ReadAsStringAsync());
+                throw new ApiException(response.RequestMessage!.RequestUri!.ToString(), (int)response.StatusCode, await response.Content.ReadAsStringAsync());
             }
         }
     }
