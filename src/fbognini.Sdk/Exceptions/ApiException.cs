@@ -1,6 +1,8 @@
-﻿using System;
+﻿using fbognini.Sdk.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,23 +10,44 @@ namespace fbognini.Sdk.Exceptions
 {
     public class ApiException : Exception
     {
-        public string Url { get; }
-        public string? Response { get; }
-        public int StatusCode { get; }
-        public ApiResult? Result { get; }
+        public string? Url { get; init; }
+        public string? Response { get; init; }
+        public int StatusCode { get; init; }
+        public ApiResult? Result { get; init; }
 
-        public ApiException(string url, ApiResult result)
+        public static async Task<ApiException> FromHttpResponseMessageApiResult(HttpResponseMessage response)
         {
-            Url = url;
-            StatusCode = (int)result.StatusCode;
-            Result = result;
+            return await FromHttpResponseMessageApiResult<ApiException>(response);
         }
 
-        public ApiException(string url, int statusCode, string response)
+        public static async Task<T> FromHttpResponseMessageApiResult<T>(HttpResponseMessage response)
+            where T : ApiException, new()
         {
-            Url = url;
-            StatusCode = statusCode;
-            Response = response;
+            var exception = new T()
+            {
+                Url = response.RequestMessage!.RequestUri!.ToString(),
+                Result = (await response.Content.ReadFromJsonAsync<ApiResult>())!
+            };
+
+            return exception;
+        }
+
+        public static async Task<ApiException> FromHttpResponseMessage(HttpResponseMessage response)
+        {
+            return await FromHttpResponseMessage<ApiException>(response);
+        }
+
+        public static async Task<T> FromHttpResponseMessage<T>(HttpResponseMessage response)
+            where T : ApiException, new()
+        {
+            var exception = new T()
+            {
+                Url = response.RequestMessage!.RequestUri!.ToString(),
+                StatusCode = (int)response.StatusCode,
+                Response = await response.Content.ReadAsStringAsync()
+            };
+
+            return exception;
         }
     }
 }

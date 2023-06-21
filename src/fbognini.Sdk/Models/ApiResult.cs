@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace fbognini.Sdk
+namespace fbognini.Sdk.Models
 {
     public class ApiResult
     {
