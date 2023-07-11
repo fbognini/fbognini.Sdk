@@ -31,7 +31,6 @@ namespace fbognini.Sdk
                 => client.GetAsync(url));
         }
 
-
         protected async Task<ApiResult> DeleteApiResult(string url)
         {
             return await ProcessApiResult(()

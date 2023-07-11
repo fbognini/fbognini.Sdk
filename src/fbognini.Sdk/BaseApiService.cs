@@ -52,6 +52,12 @@ namespace fbognini.Sdk
                 => client.GetAsync(url));
         }
 
+        protected async Task DeleteApi(string url)
+        {
+            await ProcessApi(()
+                => client.DeleteAsync(url));
+        }
+
         protected async Task<T> DeleteApi<T>(string url)
         {
             return await ProcessApi<T>(()
@@ -84,10 +90,34 @@ namespace fbognini.Sdk
             return await PostApi<T>(url, content as HttpContent);
         }
 
-        protected async Task<T> PutApi<T, TRequest>(string url, TRequest request)
+
+
+
+
+        protected async Task PutApi(string url, HttpContent? content = null)
+        {
+            await ProcessApi(()
+                => client.PutAsync(url, content));
+        }
+
+        protected async Task<T> PutApi<T>(string url, HttpContent? content = null)
         {
             return await ProcessApi<T>(()
-                => client.PutAsJsonAsync(url, request, options));
+                => client.PutAsync(url, content));
+        }
+
+        protected async Task PutApi<TRequest>(string url, TRequest request)
+        {
+            // client.PutAsJsonAsync don't use Header Content-type application/json
+            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
+            await PutApi(url, content as HttpContent);
+        }
+
+        protected async Task<T> PutApi<T, TRequest>(string url, TRequest request)
+        {
+            // client.PutAsJsonAsync don't use Header Content-type application/json
+            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
+            return await PutApi<T>(url, content as HttpContent);
         }
 
         protected virtual async Task SetAuthorization()
