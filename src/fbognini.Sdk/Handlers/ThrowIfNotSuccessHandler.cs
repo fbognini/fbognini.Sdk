@@ -9,17 +9,6 @@ using System.Threading.Tasks;
 
 namespace fbognini.Sdk.Handlers
 {
-    public class ThrowApiResultIfNotSuccessHandler : IHttpErrorHandler
-    {
-        public async Task HandleResponse(HttpResponseMessage response)
-        {
-            if (response.IsSuccessStatusCode == false)
-            {
-                throw await ApiException.FromHttpResponseMessageApiResult(response);
-            }
-        }
-    }
-
     public class ThrowIfNotSuccessHandler : IHttpErrorHandler
     {
         public async Task HandleResponse(HttpResponseMessage response)

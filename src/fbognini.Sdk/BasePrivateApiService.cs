@@ -1,6 +1,7 @@
 ﻿using fbognini.Sdk.Exceptions;
 using fbognini.Sdk.Extensions;
 using fbognini.Sdk.Interfaces;
+using fbognini.Sdk.Models;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
@@ -49,21 +50,17 @@ namespace fbognini.Sdk
             };
         }
 
-        protected async Task<HttpResponseMessage> SendAction(Func<Task<HttpResponseMessage>> action)
+        private async Task<HttpResponseMessage> SendMessage(HttpRequestMessage httpRequestMessage)
         {
-            var index = action.Method.Name.IndexOf("ApiResult>");
-            if (index == -1)
-            {
-                index = action.Method.Name.IndexOf("Api>");
-            }
+            ArgumentNullException.ThrowIfNull(httpRequestMessage, nameof(httpRequestMessage));
 
             var loggingPropertys = new LoggingProperys
             {
                 Sdk = this.GetType().Namespace!,
                 BaseAddress = client.BaseAddress?.ToString() ?? string.Empty,
-                Method = action.Method.Name[1..index].ToUpper(),
-                RequestUrl = action.Target!.GetType().GetField("url")!.GetValue(action.Target)!.ToString()!,
-                RawRequest = await GetRawRequest(action)
+                Method = httpRequestMessage.Method.Method,
+                RequestUrl = httpRequestMessage.RequestUri!.OriginalString,
+                RawRequest = await GetRawRequest(httpRequestMessage.Content)
             };
 
             try
@@ -86,13 +83,13 @@ namespace fbognini.Sdk
 
                     stopwatch.Start();
 
-                    message = await AuthenticationEnsuringPolicy.ExecuteAsync(() => ExecuteAction(action));
+                    message = await AuthenticationEnsuringPolicy.ExecuteAsync(() => ExecuteAction(() => client.SendAsync(httpRequestMessage)));
                 }
                 else
                 {
                     stopwatch.Start();
 
-                    message = await ExecuteAction(action);
+                    message = await ExecuteAction(() => client.SendAsync(httpRequestMessage));
                 }
 
                 stopwatch.Stop();
@@ -139,47 +136,14 @@ namespace fbognini.Sdk
                 return headers.SelectMany(x => x.Value, (header, value) => new KeyValuePair<string, string>(header.Key, value));
             }
         }
-
-        protected virtual void LogRequest(LoggingProperys loggingPropertys)
+        
+        private async Task<string?> GetRawRequest(HttpContent? content)
         {
-            using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
-            {
-                logger.LogInformation("{Sdk} requesting {Method} {Uri}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri);
-            }
-        }
-
-        protected virtual void LogResponse(LoggingProperys loggingPropertys)
-        {
-            using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
-            {
-                logger.LogInformation("{Sdk} {Method} {Uri} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
-            }
-        }
-
-        protected virtual void LogException(LoggingProperys loggingPropertys, Exception exception)
-        {
-            using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
-            {
-                if (exception is ApiException apiException)
-                {
-                    logger.LogWarning("{Sdk} {Method} {Uri} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri, apiException.StatusCode, loggingPropertys.ElapsedMilliseconds);
-                }
-                else
-                {
-                    logger.LogError(exception, "{Sdk} failed to ask for {Method} {Uri}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri);
-                }
-            }
-        }
-
-        private async Task<string?> GetRawRequest(Func<Task<HttpResponseMessage>> action)
-        {
-            var contentField = action.Target!.GetType().GetField("content");
-            if (contentField == null)
+            if (content == null)
             {
                 return null;
             }
 
-            var content = contentField.GetValue(action.Target)!;
             if (content is JsonContent json)
             {
                 return JsonSerializer.Serialize(json.Value, options);
@@ -192,5 +156,42 @@ namespace fbognini.Sdk
 
             return null;
         }
+
+        private static HttpRequestMessage BuildHttpRequestMessage(HttpMethod method, string url, RequestOptions? requestOptions)
+        {
+            return BuildHttpRequestMessage(method, url, null, requestOptions);
+        }
+
+        private static HttpRequestMessage BuildHttpRequestMessage(HttpMethod method, string url, HttpContent? content, RequestOptions? requestOptions)
+        {
+            var message = new HttpRequestMessage(method, url)
+            {
+                Content = content
+            };
+
+            if (requestOptions == null)
+            {
+                return message;
+            }
+
+            if (requestOptions.Headers != null)
+            {
+                foreach (var header in requestOptions.Headers)
+                {
+                    message.Headers.Add(header.Key, header.Value);
+                }
+            }
+
+            if (requestOptions.Options != null)
+            {
+                foreach (var option in requestOptions.Options.Where(x => x.Value != null))
+                {
+                    message.Options.Set(new HttpRequestOptionsKey<object>(option.Key), option.Value!);
+                }
+            }
+
+            return message;
+        }
+
     }
 }

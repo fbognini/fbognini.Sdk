@@ -13,24 +13,6 @@ namespace fbognini.Sdk.Exceptions
         public string? Url { get; init; }
         public string? Response { get; init; }
         public int StatusCode { get; init; }
-        public ApiResult? Result { get; init; }
-
-        public static async Task<ApiException> FromHttpResponseMessageApiResult(HttpResponseMessage response)
-        {
-            return await FromHttpResponseMessageApiResult<ApiException>(response);
-        }
-
-        public static async Task<T> FromHttpResponseMessageApiResult<T>(HttpResponseMessage response)
-            where T : ApiException, new()
-        {
-            var exception = new T()
-            {
-                Url = response.RequestMessage!.RequestUri!.ToString(),
-                Result = (await response.Content.ReadFromJsonAsync<ApiResult>())!
-            };
-
-            return exception;
-        }
 
         public static async Task<ApiException> FromHttpResponseMessage(HttpResponseMessage response)
         {

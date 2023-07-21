@@ -7,6 +7,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{98654E79-EB3
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fbognini.Sdk", "src\fbognini.Sdk\fbognini.Sdk.csproj", "{F05CE433-D704-4F1C-BCBB-2431BA4F2367}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{E3C23F2D-0E7A-4040-8B19-D4EE9645BED1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonPlaceholder.Sdk", "examples\JsonPlaceholder.Sdk\JsonPlaceholder.Sdk.csproj", "{6349FC53-C2F7-43B6-A8BB-73BC856ED58B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonPlaceholder.Client", "examples\JsonPlaceholder.Client\JsonPlaceholder.Client.csproj", "{46AE0938-E99D-4909-93DC-DE7E1B26E962}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,12 +23,22 @@ Global
 		{F05CE433-D704-4F1C-BCBB-2431BA4F2367}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F05CE433-D704-4F1C-BCBB-2431BA4F2367}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F05CE433-D704-4F1C-BCBB-2431BA4F2367}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6349FC53-C2F7-43B6-A8BB-73BC856ED58B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6349FC53-C2F7-43B6-A8BB-73BC856ED58B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6349FC53-C2F7-43B6-A8BB-73BC856ED58B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6349FC53-C2F7-43B6-A8BB-73BC856ED58B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46AE0938-E99D-4909-93DC-DE7E1B26E962}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46AE0938-E99D-4909-93DC-DE7E1B26E962}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46AE0938-E99D-4909-93DC-DE7E1B26E962}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46AE0938-E99D-4909-93DC-DE7E1B26E962}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F05CE433-D704-4F1C-BCBB-2431BA4F2367} = {98654E79-EB39-43E3-A008-0FEFEAFF352F}
+		{6349FC53-C2F7-43B6-A8BB-73BC856ED58B} = {E3C23F2D-0E7A-4040-8B19-D4EE9645BED1}
+		{46AE0938-E99D-4909-93DC-DE7E1B26E962} = {E3C23F2D-0E7A-4040-8B19-D4EE9645BED1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C742D2BF-E55D-4D12-AD48-53157815F132}

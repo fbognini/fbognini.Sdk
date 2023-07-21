@@ -1,5 +1,7 @@
-﻿using fbognini.Sdk.Extensions;
+﻿using fbognini.Sdk.Exceptions;
+using fbognini.Sdk.Extensions;
 using fbognini.Sdk.Interfaces;
+using fbognini.Sdk.Models;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
@@ -46,80 +48,6 @@ namespace fbognini.Sdk
             this.options = options;
         }
 
-        protected async Task<T> GetApi<T>(string url)
-        {
-            return await ProcessApi<T>(()
-                => client.GetAsync(url));
-        }
-
-        protected async Task DeleteApi(string url)
-        {
-            await ProcessApi(()
-                => client.DeleteAsync(url));
-        }
-
-        protected async Task<T> DeleteApi<T>(string url)
-        {
-            return await ProcessApi<T>(()
-                => client.DeleteAsync(url));
-        }
-
-        protected async Task PostApi(string url, HttpContent? content = null)
-        {
-            await ProcessApi(()
-                => client.PostAsync(url, content));
-        }
-
-        protected async Task<T> PostApi<T>(string url, HttpContent? content = null)
-        {
-            return await ProcessApi<T>(()
-                => client.PostAsync(url, content));
-        }
-
-        protected async Task PostApi<TRequest>(string url, TRequest request)
-        {
-            // client.PostAsJsonAsync don't use Header Content-type application/json
-            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            await PostApi(url, content as HttpContent);
-        }
-
-        protected async Task<T> PostApi<T, TRequest>(string url, TRequest request)
-        {
-            // client.PostAsJsonAsync don't use Header Content-type application/json
-            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            return await PostApi<T>(url, content as HttpContent);
-        }
-
-
-
-
-
-        protected async Task PutApi(string url, HttpContent? content = null)
-        {
-            await ProcessApi(()
-                => client.PutAsync(url, content));
-        }
-
-        protected async Task<T> PutApi<T>(string url, HttpContent? content = null)
-        {
-            return await ProcessApi<T>(()
-                => client.PutAsync(url, content));
-        }
-
-        protected async Task PutApi<TRequest>(string url, TRequest request)
-        {
-            // client.PutAsJsonAsync don't use Header Content-type application/json
-            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            await PutApi(url, content as HttpContent);
-        }
-
-        protected async Task<T> PutApi<T, TRequest>(string url, TRequest request)
-        {
-            // client.PutAsJsonAsync don't use Header Content-type application/json
-            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            return await PutApi<T>(url, content as HttpContent);
-        }
-
         protected virtual async Task SetAuthorization()
         {
             client.DefaultRequestHeaders.Authorization
@@ -143,16 +71,35 @@ namespace fbognini.Sdk
             return await action();
         }
 
-
-        protected virtual async Task ProcessApi(Func<Task<HttpResponseMessage>> action)
+        protected virtual void LogRequest(LoggingProperys loggingPropertys)
         {
-            await SendAction(action);
+            using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
+            {
+                logger.LogInformation("{Sdk} requesting {Method} {Uri}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri);
+            }
         }
 
-        protected virtual async Task<T> ProcessApi<T>(Func<Task<HttpResponseMessage>> action)
+        protected virtual void LogResponse(LoggingProperys loggingPropertys)
         {
-            var response = await SendAction(action);
-            return (await response.Content.ReadFromJsonAsync<T>(options))!;
+            using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
+            {
+                logger.LogInformation("{Sdk} {Method} {Uri} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
+            }
+        }
+
+        protected virtual void LogException(LoggingProperys loggingPropertys, Exception exception)
+        {
+            using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
+            {
+                if (exception is ApiException apiException)
+                {
+                    logger.LogWarning("{Sdk} {Method} {Uri} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri, apiException.StatusCode, loggingPropertys.ElapsedMilliseconds);
+                }
+                else
+                {
+                    logger.LogError(exception, "{Sdk} failed to ask for {Method} {Uri}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri);
+                }
+            }
         }
     }
 }
