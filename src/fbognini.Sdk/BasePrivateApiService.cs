@@ -18,6 +18,17 @@ namespace fbognini.Sdk
 {
     public abstract partial class BaseApiService
     {
+        private static List<string> SerializableContentType = new List<string>
+        {
+            System.Net.Mime.MediaTypeNames.Application.Json,
+            System.Net.Mime.MediaTypeNames.Application.Soap,
+            System.Net.Mime.MediaTypeNames.Application.Xml,
+            System.Net.Mime.MediaTypeNames.Text.Html,
+            System.Net.Mime.MediaTypeNames.Text.Plain,
+            System.Net.Mime.MediaTypeNames.Text.RichText,
+            System.Net.Mime.MediaTypeNames.Text.Xml,
+        };
+
         public class LoggingProperys
         {
             public static bool IsSdk => true;
@@ -29,6 +40,7 @@ namespace fbognini.Sdk
             public string? RawRequest { get; set; }
             public bool? IsSuccessStatusCode { get; set; }
             public int? StatusCode { get; set; }
+            public string? ContentType { get; set; }
             public string? RawResponse { get; set; }
             public IEnumerable<KeyValuePair<string, string>>? ResponseHeaders { get; set; }
             public double? ElapsedMilliseconds { get; set; }
@@ -44,6 +56,7 @@ namespace fbognini.Sdk
                 [nameof(RawRequest)] = RawRequest,
                 [nameof(IsSuccessStatusCode)] = IsSuccessStatusCode,
                 [nameof(StatusCode)] = StatusCode,
+                [nameof(ContentType)] = ContentType,
                 [nameof(RawResponse)] = RawResponse,
                 [nameof(ResponseHeaders)] = ResponseHeaders,
                 [nameof(ElapsedMilliseconds)] = ElapsedMilliseconds,
@@ -98,8 +111,13 @@ namespace fbognini.Sdk
 
                 loggingPropertys.IsSuccessStatusCode = message.IsSuccessStatusCode;
                 loggingPropertys.StatusCode = (int)message.StatusCode;
+                loggingPropertys.ContentType = message.Content.Headers.ContentType?.MediaType;
 
-                loggingPropertys.RawResponse = await message.Content.ReadAsStringAsync();
+                if (!string.IsNullOrWhiteSpace(loggingPropertys.ContentType) && SerializableContentType.Any(ct => loggingPropertys.ContentType.Contains(ct)))
+                {
+                    loggingPropertys.RawResponse = await message.Content.ReadAsStringAsync();
+                }
+
                 loggingPropertys.ResponseHeaders = GetResponseHeaders(message.Headers).ToList();
 
                 if (httpErrorHandler != null)

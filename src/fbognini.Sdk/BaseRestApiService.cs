@@ -19,16 +19,16 @@ namespace fbognini.Sdk
     public abstract partial class BaseApiService
     {
 
-        protected async Task SendApi(HttpRequestMessage message)
+        protected async Task<HttpResponseMessage> SendApi(HttpRequestMessage message)
         {
-            await ProcessApi(message);
+            return await ProcessApi(message);
         }
 
         #region GET
 
-        protected async Task GetApi(string url, RequestOptions? requestOptions = null)
+        protected async Task<HttpResponseMessage> GetApi(string url, RequestOptions? requestOptions = null)
         {
-            await ProcessApi(BaseApiService.BuildHttpRequestMessage(HttpMethod.Get, url, requestOptions));
+            return await ProcessApi(BaseApiService.BuildHttpRequestMessage(HttpMethod.Get, url, requestOptions));
         }
 
         protected async Task<T> GetApi<T>(string url, RequestOptions? requestOptions = null)
@@ -40,9 +40,9 @@ namespace fbognini.Sdk
 
         #region DELETE
 
-        protected async Task DeleteApi(string url, RequestOptions? requestOptions = null)
+        protected async Task<HttpResponseMessage> DeleteApi(string url, RequestOptions? requestOptions = null)
         {
-            await ProcessApi(BaseApiService.BuildHttpRequestMessage(HttpMethod.Delete, url, requestOptions));
+            return await ProcessApi(BaseApiService.BuildHttpRequestMessage(HttpMethod.Delete, url, requestOptions));
         }
 
         protected async Task<T> DeleteApi<T>(string url, RequestOptions? requestOptions = null)
@@ -54,9 +54,10 @@ namespace fbognini.Sdk
 
         #region POST
 
-        protected async Task PostApi(string url, HttpContent? content = null, RequestOptions? requestOptions = null)
+
+        protected async Task<HttpResponseMessage> PostApi(string url, HttpContent? content = null, RequestOptions? requestOptions = null)
         {
-            await ProcessApi(BaseApiService.BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions));
+            return await ProcessApi(BaseApiService.BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions));
         }
 
         protected async Task<T> PostApi<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null)
@@ -64,27 +65,27 @@ namespace fbognini.Sdk
             return await ProcessApi<T>(BaseApiService.BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions));
         }
 
-        protected async Task PostApi<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
+        protected async Task<HttpResponseMessage> PostApi<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
         {
             // client.PostAsJsonAsync don't use Header Content-type application/json
             var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            await PostApi(url, content as HttpContent);
+            return await PostApi(url, content as HttpContent, requestOptions);
         }
 
         protected async Task<T> PostApi<T, TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
         {
             // client.PostAsJsonAsync don't use Header Content-type application/json
             var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            return await PostApi<T>(url, content as HttpContent);
+            return await PostApi<T>(url, content as HttpContent, requestOptions);
         }
 
         #endregion
 
         #region PUT
 
-        protected async Task PutApi(string url, HttpContent? content = null, RequestOptions? requestOptions = null)
+        protected async Task<HttpResponseMessage> PutApi(string url, HttpContent? content = null, RequestOptions? requestOptions = null)
         {
-            await ProcessApi(BaseApiService.BuildHttpRequestMessage(HttpMethod.Put, url, content, requestOptions));
+            return await ProcessApi(BaseApiService.BuildHttpRequestMessage(HttpMethod.Put, url, content, requestOptions));
         }
 
         protected async Task<T> PutApi<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null)
@@ -92,11 +93,11 @@ namespace fbognini.Sdk
             return await ProcessApi<T>(BaseApiService.BuildHttpRequestMessage(HttpMethod.Put, url, content, requestOptions));
         }
 
-        protected async Task PutApi<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
+        protected async Task<HttpResponseMessage> PutApi<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
         {
             // client.PutAsJsonAsync don't use Header Content-type application/json
             var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            await PutApi(url, content as HttpContent);
+            return await PutApi(url, content as HttpContent);
         }
 
         protected async Task<T> PutApi<T, TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
@@ -108,14 +109,14 @@ namespace fbognini.Sdk
 
         #endregion
 
-        private async Task ProcessApi(HttpRequestMessage message)
+        private async Task<HttpResponseMessage> ProcessApi(HttpRequestMessage message)
         {
-            await SendMessage(message);
+            return await SendMessage(message);
         }
 
         private async Task<T> ProcessApi<T>(HttpRequestMessage message)
         {
-            var response = await SendMessage(message);
+            var response = await ProcessApi(message);
             return (await response.Content.ReadFromJsonAsync<T>(options))!;
         }
     }
