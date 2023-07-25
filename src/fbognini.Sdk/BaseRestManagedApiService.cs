@@ -65,18 +65,18 @@ namespace fbognini.Sdk
             return await ProcessApiResult<T>(BaseApiService.BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions));
         }
 
-        protected async Task<ManagedApiResult> PostApiResult<TRequest>(string url, TRequest request)
+        protected async Task<ManagedApiResult> PostApiResult<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
         {
             // client.PostAsJsonAsync don't use Header Content-type application/json
             var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            return await PostApiResult(url, content as HttpContent);
+            return await PostApiResult(url, content as HttpContent, requestOptions);
         }
 
-        protected async Task<ManagedApiResult<T>> PostApiResult<T, TRequest>(string url, TRequest request)
+        protected async Task<ManagedApiResult<T>> PostApiResult<T, TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
         {
             // client.PostAsJsonAsync don't use Header Content-type application/json
             var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            return await PostApiResult<T>(url, content as HttpContent);
+            return await PostApiResult<T>(url, content as HttpContent, requestOptions);
         }
 
         #endregion
