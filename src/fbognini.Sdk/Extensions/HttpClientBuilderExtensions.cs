@@ -17,9 +17,6 @@ namespace fbognini.Sdk.Extensions
     {
         public static IHttpClientBuilder AddAuthenticationPolicy(this IHttpClientBuilder httpClientBuilder)
         {
-            httpClientBuilder.Services.AddTransient<RefreshedCurrentUserServiceTokenHandler>();
-            httpClientBuilder.AddHttpMessageHandler<RefreshedCurrentUserServiceTokenHandler>();
-
             httpClientBuilder.AddPolicyHandler((sp, request) =>
             {
                 var currentUserService = sp.GetService<ISdkCurrentUserService>();
@@ -48,6 +45,8 @@ namespace fbognini.Sdk.Extensions
                     });
             });
 
+            httpClientBuilder.Services.AddTransient<RefreshedCurrentUserServiceTokenHandler>();
+            httpClientBuilder.AddHttpMessageHandler<RefreshedCurrentUserServiceTokenHandler>();
 
             return httpClientBuilder;
         }

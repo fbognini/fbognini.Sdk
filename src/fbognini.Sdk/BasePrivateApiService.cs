@@ -82,11 +82,7 @@ namespace fbognini.Sdk
 
                 var stopwatch = new Stopwatch();
 
-                if (currentUserService != null && await currentUserService.IsAuthenticated())
-                {
-                    var accessToken = await currentUserService.GetAccessToken();
-                    httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue(currentUserService.Schema, accessToken);
-                }
+                await SetAuthorization(httpRequestMessage);
 
                 stopwatch.Start();
 

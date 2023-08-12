@@ -1,4 +1,5 @@
 ﻿using fbognini.Sdk.Exceptions;
+using fbognini.Sdk.Extensions;
 using fbognini.Sdk.Interfaces;
 using Polly;
 using System;
@@ -16,12 +17,12 @@ namespace fbognini.Sdk.Handlers
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var response = await base.SendAsync(request, cancellationToken);
-            if (response.IsSuccessStatusCode == false)
+            if (response.IsSuccessStatusCode)
             {
-                throw await ApiException.FromHttpResponseMessage(response);
+                return response;
             }
 
-            return response;
+            throw await ApiException.FromHttpResponseMessage(response);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Polly;
+﻿using fbognini.Sdk.Extensions;
+using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +11,8 @@ namespace fbognini.Sdk.Handlers
 {
     internal class CurrentUserServiceToken
     {
-        public string Scheme { get; set; }
-        public string AccessToken { get; set; }
+        public string Scheme { get; set; } = string.Empty;
+        public string AccessToken { get; set; } = string.Empty;
     }
 
     internal class RefreshedCurrentUserServiceTokenHandler : DelegatingHandler
@@ -21,8 +22,7 @@ namespace fbognini.Sdk.Handlers
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var context = request.GetPolicyExecutionContext();
-            if (context.Count > 0 && context.TryGetValue(TokenKey, out var tokenAsObject) && tokenAsObject is CurrentUserServiceToken token)
+            if (request.TryGetPolicyRefreshToken(out var token))
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue(token.Scheme, token.AccessToken);
             }
