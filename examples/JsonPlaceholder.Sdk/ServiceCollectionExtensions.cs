@@ -11,16 +11,6 @@ namespace JsonPlaceholder.Sdk
     {
         public static IServiceCollection AddJsonPlaceholderApiService(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddJsonPlaceholderApiService<FakeHttpErrorHandler>(configuration);
-
-            return services;
-        }
-
-        public static IServiceCollection AddJsonPlaceholderApiService<THttpErrorHandler>(this IServiceCollection services, IConfiguration configuration)
-            where THttpErrorHandler : class, IHttpErrorHandler, new()
-        {
-            services.AddScoped<IHttpErrorHandler, THttpErrorHandler>();
-
             services.AddHttpClient<IJsonPlaceholderApiService, JsonPlaceholderApiService>();
 
             return services;

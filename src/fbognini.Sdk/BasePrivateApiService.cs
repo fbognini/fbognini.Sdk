@@ -82,28 +82,15 @@ namespace fbognini.Sdk
 
                 var stopwatch = new Stopwatch();
 
-                HttpResponseMessage message;
-                if (currentUserService != null)
+                if (currentUserService != null && await currentUserService.IsAuthenticated())
                 {
-                    if (await currentUserService.IsAuthenticated())
-                    {
-                        await SetAuthorization();
-                    }
-                    else
-                    {
-                        await ResetAuthorization();
-                    }
-
-                    stopwatch.Start();
-
-                    message = await AuthenticationEnsuringPolicy.ExecuteAsync(() => ExecuteAction(() => client.SendAsync(httpRequestMessage)));
+                    var accessToken = await currentUserService.GetAccessToken();
+                    httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue(currentUserService.Schema, accessToken);
                 }
-                else
-                {
-                    stopwatch.Start();
 
-                    message = await ExecuteAction(() => client.SendAsync(httpRequestMessage));
-                }
+                stopwatch.Start();
+
+                var message = await client.SendAsync(httpRequestMessage);
 
                 stopwatch.Stop();
 
@@ -119,11 +106,6 @@ namespace fbognini.Sdk
                 }
 
                 loggingPropertys.ResponseHeaders = GetResponseHeaders(message.Headers).ToList();
-
-                if (httpErrorHandler != null)
-                {
-                    await httpErrorHandler.HandleResponse(message);
-                }
 
                 LogResponse(loggingPropertys);
 
@@ -210,6 +192,5 @@ namespace fbognini.Sdk
 
             return message;
         }
-
     }
 }

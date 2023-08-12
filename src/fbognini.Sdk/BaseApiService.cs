@@ -23,49 +23,20 @@ namespace fbognini.Sdk
         private readonly ILogger<BaseApiService> logger;
         protected ISdkCurrentUserService? currentUserService;
 
-        private readonly IHttpErrorHandler? httpErrorHandler;
         private readonly JsonSerializerOptions? options;
 
-        protected AsyncRetryPolicy<HttpResponseMessage> AuthenticationEnsuringPolicy => Policy
-                .HandleResult<HttpResponseMessage>(r =>
-                {
-                    return r.StatusCode == HttpStatusCode.Unauthorized;
-                })
-                .RetryAsync(
-                    retryCount: 1,
-                    onRetryAsync: async (outcome, retryNumber, context) =>
-                    {
-                        await ReloadAuthorization();
-                    }
-                );
-
-        public BaseApiService(HttpClient client, ILogger<BaseApiService> logger, IHttpErrorHandler? httpErrorHandler = null, ISdkCurrentUserService? currentUserService = null, JsonSerializerOptions? options = null)
+        public BaseApiService(HttpClient client, ILogger<BaseApiService> logger, ISdkCurrentUserService? currentUserService = null, JsonSerializerOptions? options = null)
         {
             this.client = client;
             this.logger = logger;
-            this.httpErrorHandler = httpErrorHandler;
             this.currentUserService = currentUserService;
             this.options = options;
         }
 
-        protected virtual async Task SetAuthorization()
-        {
-            client.DefaultRequestHeaders.Authorization
-                 = new AuthenticationHeaderValue("Bearer", await currentUserService!.GetAccessToken());
-        }
-
-        protected virtual Task ResetAuthorization()
-        {
-            client.DefaultRequestHeaders.Authorization = null;
-            return Task.CompletedTask;
-        }
-
-        protected virtual async Task ReloadAuthorization()
-        {
-            await currentUserService!.ReloadAccessToken();
-            await SetAuthorization();
-        }
-
+        /*
+         * Please don't use Polly in this method
+         * https://github.com/App-vNext/Polly/wiki/Polly-and-HttpClientFactory
+         */
         protected virtual async Task<HttpResponseMessage> ExecuteAction(Func<Task<HttpResponseMessage>> action)
         {
             return await action();

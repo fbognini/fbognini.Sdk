@@ -11,8 +11,8 @@ namespace JsonPlaceholder.Sdk
 
     internal class JsonPlaceholderApiService : BaseApiService, IJsonPlaceholderApiService
     {
-        public JsonPlaceholderApiService(HttpClient client, ILogger<JsonPlaceholderApiService> logger, IHttpErrorHandler httpErrorHandler)
-            : base(client, logger, httpErrorHandler, null)
+        public JsonPlaceholderApiService(HttpClient client, ILogger<JsonPlaceholderApiService> logger)
+            : base(client, logger, null)
         {
             client.BaseAddress = new Uri($"https://jsonplaceholder.typicode.com/");
         }
