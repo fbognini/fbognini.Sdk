@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>fbognini.Sdk</PackageId>
     <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
-    <Version>2.2.2</Version>
+    <Version>2.2.3</Version>
     <Authors>Francesco Bognini</Authors>
     <Company>Francesco Bognini</Company>
     <PackageReadmeFile>README.md</PackageReadmeFile>
