@@ -41,14 +41,5 @@ namespace fbognini.Sdk
                 httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue(currentUserService.Schema, accessToken);
             }
         }
-
-        /*
-         * Please don't use Polly in this method
-         * https://github.com/App-vNext/Polly/wiki/Polly-and-HttpClientFactory
-         */
-        protected virtual async Task<HttpResponseMessage> ExecuteAction(Func<Task<HttpResponseMessage>> action)
-        {
-            return await action();
-        }
     }
 }

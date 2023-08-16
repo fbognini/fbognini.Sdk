@@ -9,7 +9,7 @@ namespace fbognini.Sdk.Models
 {
     public class RequestOptions
     {
-        public IEnumerable<KeyValuePair<string, IEnumerable<string>>>? Headers { get; set; }
-        public IDictionary<string, object?>? Options { get; set; }
+        public HttpRequestHeaders Headers { get; set; } = new HttpRequestMessage().Headers;
+        public HttpRequestOptions Options { get; set; } = new HttpRequestMessage().Options;
     }
 }
