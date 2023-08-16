@@ -50,36 +50,5 @@ namespace fbognini.Sdk
         {
             return await action();
         }
-
-        protected virtual void LogRequest(LoggingProperys loggingPropertys)
-        {
-            using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
-            {
-                logger.LogInformation("{Sdk} requesting {Method} {Uri}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri);
-            }
-        }
-
-        protected virtual void LogResponse(LoggingProperys loggingPropertys)
-        {
-            using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
-            {
-                logger.LogInformation("{Sdk} {Method} {Uri} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
-            }
-        }
-
-        protected virtual void LogException(LoggingProperys loggingPropertys, Exception exception)
-        {
-            using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
-            {
-                if (exception is ApiException apiException)
-                {
-                    logger.LogWarning("{Sdk} {Method} {Uri} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri, apiException.StatusCode, loggingPropertys.ElapsedMilliseconds);
-                }
-                else
-                {
-                    logger.LogError(exception, "{Sdk} failed to ask for {Method} {Uri}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri);
-                }
-            }
-        }
     }
 }

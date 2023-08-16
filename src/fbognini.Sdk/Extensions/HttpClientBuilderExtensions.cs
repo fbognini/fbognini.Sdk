@@ -68,5 +68,19 @@ namespace fbognini.Sdk.Extensions
 
             return builder;
         }
+
+
+        /// <summary>
+        /// Add logging handler. It should be specified as last handler.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static IHttpClientBuilder AddLogging(this IHttpClientBuilder builder)
+        {
+            builder.Services.AddTransient<LoggingHandler>();
+            builder.AddHttpMessageHandler<LoggingHandler>();
+
+            return builder;
+        }
     }
 }
