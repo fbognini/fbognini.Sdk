@@ -23,7 +23,6 @@ namespace fbognini.Sdk.Handlers
         public string BaseAddress { get; init; } = string.Empty;
         public string Method { get; init; } = string.Empty;
         public string RequestUrl { get; init; } = string.Empty;
-        public string Uri => $"{BaseAddress}{RequestUrl}";
         public string? RawRequest { get; set; }
         public bool? IsSuccessStatusCode { get; set; }
         public int? StatusCode { get; set; }
@@ -39,7 +38,6 @@ namespace fbognini.Sdk.Handlers
             [nameof(BaseAddress)] = BaseAddress,
             [nameof(Method)] = Method,
             [nameof(RequestUrl)] = RequestUrl,
-            [nameof(Uri)] = Uri,
             [nameof(RawRequest)] = RawRequest,
             [nameof(IsSuccessStatusCode)] = IsSuccessStatusCode,
             [nameof(StatusCode)] = StatusCode,
@@ -87,7 +85,7 @@ namespace fbognini.Sdk.Handlers
 
                 using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                 {
-                    logger.LogInformation("{Sdk} requesting {Method} {Uri}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri);
+                    logger.LogInformation("{Sdk} requesting {Method} {RequestUrl}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.RequestUrl);
                 }
 
                 var stopwatch = new Stopwatch();
@@ -117,7 +115,7 @@ namespace fbognini.Sdk.Handlers
                 {
                     using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                     {
-                        logger.Log(level, "{Sdk} {Method} {Uri} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
+                        logger.Log(level, "{Sdk} {Method} {RequestUrl} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.RequestUrl, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
                     }
                 }
 
@@ -127,7 +125,7 @@ namespace fbognini.Sdk.Handlers
             {
                 using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                 {
-                    logger.LogError(ex, "{Sdk} failed to ask for {Method} {Uri}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Uri);
+                    logger.LogError(ex, "{Sdk} failed to ask for {Method} {RequestUrl}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.RequestUrl);
                 }
 
                 throw;
