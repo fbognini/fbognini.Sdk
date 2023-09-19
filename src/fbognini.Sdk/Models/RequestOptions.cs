@@ -11,5 +11,6 @@ namespace fbognini.Sdk.Models
     {
         public HttpRequestHeaders Headers { get; set; } = new HttpRequestMessage().Headers;
         public HttpRequestOptions Options { get; set; } = new HttpRequestMessage().Options;
+        public Encoding? Encoding { get; set; }
     }
 }

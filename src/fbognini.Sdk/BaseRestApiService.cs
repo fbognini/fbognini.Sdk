@@ -68,14 +68,14 @@ namespace fbognini.Sdk
         protected async Task<HttpResponseMessage> PostApi<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
         {
             // client.PostAsJsonAsync don't use Header Content-type application/json
-            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
+            var content = GetStringContent(request, requestOptions);
             return await PostApi(url, content as HttpContent, requestOptions);
         }
 
         protected async Task<T> PostApi<T, TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
         {
             // client.PostAsJsonAsync don't use Header Content-type application/json
-            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
+            var content = GetStringContent(request, requestOptions);
             return await PostApi<T>(url, content as HttpContent, requestOptions);
         }
 
@@ -96,15 +96,15 @@ namespace fbognini.Sdk
         protected async Task<HttpResponseMessage> PutApi<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
         {
             // client.PutAsJsonAsync don't use Header Content-type application/json
-            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            return await PutApi(url, content as HttpContent);
+            var content = GetStringContent(request, requestOptions);
+            return await PutApi(url, content as HttpContent, requestOptions);
         }
 
         protected async Task<T> PutApi<T, TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
         {
             // client.PutAsJsonAsync don't use Header Content-type application/json
-            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            return await PutApi<T>(url, content as HttpContent);
+            var content = GetStringContent(request, requestOptions);
+            return await PutApi<T>(url, content as HttpContent, requestOptions);
         }
 
         #endregion
@@ -118,6 +118,16 @@ namespace fbognini.Sdk
         {
             var response = await ProcessApi(message);
             return (await response.Content.ReadFromJsonAsync<T>(options))!;
+        }
+
+        private HttpContent GetStringContent<TRequest>(TRequest request, RequestOptions? requestOptions = null)
+        {
+            if (requestOptions != null && requestOptions.Encoding != null)
+            {
+                return new StringContent(JsonSerializer.Serialize(request, options), requestOptions.Encoding, "application/json");
+            }
+
+            return new StringContentWithoutCharset(JsonSerializer.Serialize(request, options), "application/json");
         }
     }
 }

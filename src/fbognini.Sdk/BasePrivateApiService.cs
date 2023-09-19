@@ -56,7 +56,7 @@ namespace fbognini.Sdk
             {
                 foreach (var header in requestOptions.Headers)
                 {
-                    message.Headers.Add(header.Key, header.Value);
+                    message.Headers.TryAddWithoutValidation(header.Key, header.Value);
                 }
             }
 
