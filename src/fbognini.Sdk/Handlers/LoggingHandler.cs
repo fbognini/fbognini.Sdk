@@ -88,15 +88,8 @@ namespace fbognini.Sdk.Handlers
                     logger.LogInformation("{Sdk} requesting {Method} {RequestUrl}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.RequestUrl);
                 }
 
-                var stopwatch = new Stopwatch();
+                var message = await SendWithWatch();
 
-                stopwatch.Start();
-
-                var message = await base.SendAsync(request, cancellationToken);
-
-                stopwatch.Stop();
-
-                loggingPropertys.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
 
                 loggingPropertys.IsSuccessStatusCode = message.IsSuccessStatusCode;
                 loggingPropertys.StatusCode = (int)message.StatusCode;
@@ -109,7 +102,6 @@ namespace fbognini.Sdk.Handlers
 
                 loggingPropertys.ResponseHeaders = LoggingHandler.GetResponseHeaders(message.Headers).ToList();
 
-
                 var level = message.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning;
                 if (logger.IsEnabled(level))
                 {
@@ -120,6 +112,32 @@ namespace fbognini.Sdk.Handlers
                 }
 
                 return message;
+
+                async Task<HttpResponseMessage> SendWithWatch()
+                {
+                    var stopwatch = new Stopwatch();
+
+                    try
+                    {
+                        stopwatch.Start();
+
+                        return await base.SendAsync(request, cancellationToken);
+                    }
+                    finally
+                    {
+                        stopwatch.Stop();
+                        loggingPropertys.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+                    }
+                }
+            }
+            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException timeoutException)
+            {
+                using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
+                {
+                    logger.LogError(ex, "{Sdk} {Method} {RequestUrl} has timed out in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.RequestUrl, loggingPropertys.ElapsedMilliseconds);
+                }
+
+                throw;
             }
             catch (Exception ex)
             {
