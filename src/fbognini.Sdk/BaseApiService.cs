@@ -20,15 +20,13 @@ namespace fbognini.Sdk
     public abstract partial class BaseApiService
     {
         protected readonly HttpClient client;
-        private readonly ILogger<BaseApiService> logger;
         protected ISdkCurrentUserService? currentUserService;
 
         private readonly JsonSerializerOptions? options;
 
-        public BaseApiService(HttpClient client, ILogger<BaseApiService> logger, ISdkCurrentUserService? currentUserService = null, JsonSerializerOptions? options = null)
+        public BaseApiService(HttpClient client, ISdkCurrentUserService? currentUserService = null, JsonSerializerOptions? options = null)
         {
             this.client = client;
-            this.logger = logger;
             this.currentUserService = currentUserService;
             this.options = options;
         }

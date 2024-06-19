@@ -27,13 +27,13 @@ namespace fbognini.Sdk
 
         protected async Task<ManagedApiResult> GetApiResult(string url, RequestOptions? requestOptions = null)
         {
-            return await ProcessApiResult(BaseApiService.BuildHttpRequestMessage(HttpMethod.Get, url, requestOptions));
+            return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Get, url, requestOptions));
         }
 
         protected async Task<ManagedApiResult<T>> GetApiResult<T>(string url, RequestOptions? requestOptions = null)
              where T : class
         {
-            return await ProcessApiResult<T>(BaseApiService.BuildHttpRequestMessage(HttpMethod.Get, url, requestOptions));
+            return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Get, url, requestOptions));
         }
 
         #endregion
@@ -42,13 +42,13 @@ namespace fbognini.Sdk
 
         protected async Task<ManagedApiResult> DeleteApiResult(string url, RequestOptions? requestOptions = null)
         {
-            return await ProcessApiResult(BaseApiService.BuildHttpRequestMessage(HttpMethod.Delete, url, requestOptions));
+            return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Delete, url, requestOptions));
         }
 
         protected async Task<ManagedApiResult<T>> DeleteApiResult<T>(string url, RequestOptions? requestOptions = null)
             where T : class
         {
-            return await ProcessApiResult<T>(BaseApiService.BuildHttpRequestMessage(HttpMethod.Delete, url, requestOptions));
+            return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Delete, url, requestOptions));
         }
 
         #endregion
@@ -57,12 +57,12 @@ namespace fbognini.Sdk
 
         protected async Task<ManagedApiResult> PostApiResult(string url, HttpContent? content = null, RequestOptions? requestOptions = null)
         {
-            return await ProcessApiResult(BaseApiService.BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions));
+            return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions));
         }
 
         protected async Task<ManagedApiResult<T>> PostApiResult<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null)
         {
-            return await ProcessApiResult<T>(BaseApiService.BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions));
+            return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions));
         }
 
         protected async Task<ManagedApiResult> PostApiResult<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
@@ -85,12 +85,12 @@ namespace fbognini.Sdk
 
         protected async Task<ManagedApiResult> PutApiResult(string url, HttpContent? content = null, RequestOptions? requestOptions = null)
         {
-            return await ProcessApiResult(BaseApiService.BuildHttpRequestMessage(HttpMethod.Put, url, content, requestOptions));
+            return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Put, url, content, requestOptions));
         }
 
         protected async Task<ManagedApiResult<T>> PutApiResult<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null)
         {
-            return await ProcessApiResult<T>(BaseApiService.BuildHttpRequestMessage(HttpMethod.Put, url, content, requestOptions));
+            return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Put, url, content, requestOptions));
         }
 
         protected async Task<ManagedApiResult> PutApiResult<TRequest>(string url, TRequest request)

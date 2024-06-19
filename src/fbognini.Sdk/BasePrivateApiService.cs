@@ -18,8 +18,10 @@ namespace fbognini.Sdk
 {
     public abstract partial class BaseApiService
     {
-        public const string SdkOptionName = "Sdk";
-        public const string BaseAddressOptionName = "BaseAddress";
+        public HttpRequestOptions DefaultRequestOptions { get; } = new();
+
+        public const string SdkOptionName = "internal_25aI6plz";
+        public const string BaseAddressOptionName = "internal_iE97RqE3";
 
         private async Task<HttpResponseMessage> SendMessage(HttpRequestMessage httpRequestMessage)
         {
@@ -35,17 +37,20 @@ namespace fbognini.Sdk
             return message;
         }
         
-        private static HttpRequestMessage BuildHttpRequestMessage(HttpMethod method, string url, RequestOptions? requestOptions)
+        private HttpRequestMessage BuildHttpRequestMessage(HttpMethod method, string url, RequestOptions? requestOptions)
         {
             return BuildHttpRequestMessage(method, url, null, requestOptions);
         }
 
-        private static HttpRequestMessage BuildHttpRequestMessage(HttpMethod method, string url, HttpContent? content, RequestOptions? requestOptions)
+        private HttpRequestMessage BuildHttpRequestMessage(HttpMethod method, string url, HttpContent? content, RequestOptions? requestOptions)
         {
             var message = new HttpRequestMessage(method, url)
             {
                 Content = content
             };
+
+
+            AddOptions(message, DefaultRequestOptions);
 
             if (requestOptions == null)
             {
@@ -62,13 +67,23 @@ namespace fbognini.Sdk
 
             if (requestOptions.Options != null)
             {
-                foreach (var option in requestOptions.Options.Where(x => x.Value != null))
-                {
-                    message.Options.Set(new HttpRequestOptionsKey<object>(option.Key), option.Value!);
-                }
+                AddOptions(message, requestOptions.Options);    
             }
 
             return message;
+        }
+
+        private static void AddOptions(HttpRequestMessage message, HttpRequestOptions options)
+        {
+            if (options is null)
+            {
+                return;
+            }
+
+            foreach (var option in options.Where(x => x.Value != null))
+            {
+                message.Options.Set(new HttpRequestOptionsKey<object>(option.Key), option.Value!);
+            }
         }
     }
 }
