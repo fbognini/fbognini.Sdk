@@ -18,100 +18,106 @@ namespace fbognini.Sdk
 {
     public abstract partial class BaseApiService
     {
-        protected async Task SendApiResult(HttpRequestMessage message)
+        [Obsolete("Please use SendApiAsync()")]
+        protected Task SendApiResult(HttpRequestMessage message, CancellationToken cancellationToken = default) => SendApiResultAsync(message, cancellationToken);
+        protected async Task SendApiResultAsync(HttpRequestMessage message, CancellationToken cancellationToken = default)
         {
-            await ProcessApiResult(message);
+            await ProcessApiResult(message, cancellationToken);
         }
 
         #region GET
 
-        protected async Task<ManagedApiResult> GetApiResult(string url, RequestOptions? requestOptions = null)
+        [Obsolete("Please use SendApiAsync()")]
+        protected Task<ManagedApiResult> GetApiResult(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => GetApiResultAsync(url, requestOptions, cancellationToken);
+        protected async Task<ManagedApiResult> GetApiResultAsync(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Get, url, requestOptions));
+            return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Get, url, requestOptions), cancellationToken);
         }
 
-        protected async Task<ManagedApiResult<T>> GetApiResult<T>(string url, RequestOptions? requestOptions = null)
-             where T : class
+        [Obsolete("Please use SendApiAsync()")]
+        protected Task<ManagedApiResult<T>> GetApiResult<T>(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => GetApiResultAsync<T>(url, requestOptions, cancellationToken);
+        protected async Task<ManagedApiResult<T>> GetApiResultAsync<T>(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Get, url, requestOptions));
+            return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Get, url, requestOptions), cancellationToken);
         }
 
         #endregion
 
         #region DELETE
 
-        protected async Task<ManagedApiResult> DeleteApiResult(string url, RequestOptions? requestOptions = null)
+        [Obsolete("Please use SendApiAsync()")]
+        protected Task<ManagedApiResult> DeleteApiResult(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => DeleteApiResultAsync(url, requestOptions, cancellationToken);
+        protected async Task<ManagedApiResult> DeleteApiResultAsync(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Delete, url, requestOptions));
+            return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Delete, url, requestOptions), cancellationToken);
         }
 
-        protected async Task<ManagedApiResult<T>> DeleteApiResult<T>(string url, RequestOptions? requestOptions = null)
-            where T : class
+        [Obsolete("Please use SendApiAsync()")]
+        protected Task<ManagedApiResult<T>> DeleteApiResult<T>(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => DeleteApiResultAsync<T>(url, requestOptions, cancellationToken);    
+        protected async Task<ManagedApiResult<T>> DeleteApiResultAsync<T>(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Delete, url, requestOptions));
+            return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Delete, url, requestOptions), cancellationToken);
         }
 
         #endregion
 
         #region POST
 
-        protected async Task<ManagedApiResult> PostApiResult(string url, HttpContent? content = null, RequestOptions? requestOptions = null)
+        [Obsolete("Please use SendApiAsync()")]
+        protected Task<ManagedApiResult<T>> PostApiResult<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => PostApiResultAsync<T>(url, content, requestOptions, cancellationToken);
+        protected async Task<ManagedApiResult<T>> PostApiResultAsync<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions));
+            return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions), cancellationToken);
         }
 
-        protected async Task<ManagedApiResult<T>> PostApiResult<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null)
+        [Obsolete("Please use SendApiAsync()")]
+        protected Task<ManagedApiResult> PostApiResult<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => PostApiResultAsync<TRequest>(url, request, requestOptions, cancellationToken);
+        protected async Task<ManagedApiResult> PostApiResultAsync<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions));
+            var content = GetHttpContentContent(request, requestOptions);
+            return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions), cancellationToken);
         }
 
-        protected async Task<ManagedApiResult> PostApiResult<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
+        [Obsolete("Please use SendApiAsync()")]
+        protected Task<ManagedApiResult<T>> PostApiResult<T, TRequest>(string url, TRequest request, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => PostApiResultAsync<T, TRequest>(url, request, requestOptions, cancellationToken);
+        protected async Task<ManagedApiResult<T>> PostApiResultAsync<T, TRequest>(string url, TRequest request, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            // client.PostAsJsonAsync don't use Header Content-type application/json
-            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            return await PostApiResult(url, content as HttpContent, requestOptions);
-        }
-
-        protected async Task<ManagedApiResult<T>> PostApiResult<T, TRequest>(string url, TRequest request, RequestOptions? requestOptions = null)
-        {
-            // client.PostAsJsonAsync don't use Header Content-type application/json
-            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            return await PostApiResult<T>(url, content as HttpContent, requestOptions);
+            var content = GetHttpContentContent(request, requestOptions);
+            return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions), cancellationToken);
         }
 
         #endregion
 
         #region PUT
 
-        protected async Task<ManagedApiResult> PutApiResult(string url, HttpContent? content = null, RequestOptions? requestOptions = null)
+        [Obsolete("Please use PutApiResultAsync<T>()")]
+        protected Task<ManagedApiResult<T>> PutApiResult<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => PutApiResultAsync<T>(url, content, requestOptions, cancellationToken);
+        protected async Task<ManagedApiResult<T>> PutApiResultAsync<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Put, url, content, requestOptions));
+            return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Put, url, content, requestOptions), cancellationToken);
         }
 
-        protected async Task<ManagedApiResult<T>> PutApiResult<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null)
+        [Obsolete("Please use PutApiResultAsync<TRequest>()")]
+        protected Task<ManagedApiResult> PutApiResult<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => PutApiResultAsync<TRequest>(url, request, requestOptions, cancellationToken);
+        protected async Task<ManagedApiResult> PutApiResultAsync<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Put, url, content, requestOptions));
+            var content = GetHttpContentContent(request, requestOptions);
+            return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Put, url, content, requestOptions), cancellationToken);
         }
 
-        protected async Task<ManagedApiResult> PutApiResult<TRequest>(string url, TRequest request)
+        [Obsolete("Please use  PutApiResultAsync<T, TRequest>()")]
+        protected Task<ManagedApiResult<T>> PutApiResult<T, TRequest>(string url, TRequest request, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) =>  PutApiResultAsync<T, TRequest>(url, request, requestOptions, cancellationToken);
+        protected async Task<ManagedApiResult<T>> PutApiResultAsync<T, TRequest>(string url, TRequest request, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            // client.PutAsJsonAsync don't use Header Content-type application/json
-            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            return await PutApiResult(url, content as HttpContent);
-        }
-
-        protected async Task<ManagedApiResult<T>> PutApiResult<T, TRequest>(string url, TRequest request)
-        {
-            // client.PutAsJsonAsync don't use Header Content-type application/json
-            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            return await PutApiResult<T>(url, content as HttpContent);
+            var content = GetHttpContentContent(request, requestOptions);
+            return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Put, url, content, requestOptions), cancellationToken);
         }
 
         #endregion
 
-        private async Task<ManagedApiResult> ProcessApiResult(HttpRequestMessage message)
+        private async Task<ManagedApiResult> ProcessApiResult(HttpRequestMessage message, CancellationToken cancellationToken)
         {
-            var response = await SendMessage(message);
+            var response = await SendMessage(message, cancellationToken);
             if (response.IsSuccessStatusCode)
             {
                 return new ManagedApiResult
@@ -125,20 +131,21 @@ namespace fbognini.Sdk
             {
                 IsSuccess = false,
                 StatusCode = response.StatusCode,
-                Raw = await response.Content.ReadAsStringAsync()
+                Raw = await response.Content.ReadAsStringAsync(cancellationToken)
             };
         }
 
-        private async Task<ManagedApiResult<T>> ProcessApiResult<T>(HttpRequestMessage message)
+        private async Task<ManagedApiResult<T>> ProcessApiResult<T>(HttpRequestMessage message, CancellationToken cancellationToken)
         {
-            var response = await SendMessage(message);
+            var response = await SendMessage(message, cancellationToken);
             if (response.IsSuccessStatusCode)
             {
+                var json = await response.Content.ReadFromJsonAsync<T>(options, cancellationToken: cancellationToken);
                 return new ManagedApiResult<T>
                 {
                     IsSuccess = true,
                     StatusCode = response.StatusCode,
-                    Response = (await response.Content.ReadFromJsonAsync<T>(options))!
+                    Response = json!
                 };
             }
 
@@ -146,7 +153,7 @@ namespace fbognini.Sdk
             {
                 IsSuccess = false,
                 StatusCode = response.StatusCode,
-                Raw = await response.Content.ReadAsStringAsync()
+                Raw = await response.Content.ReadAsStringAsync(cancellationToken)
             };
         }
     }

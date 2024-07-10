@@ -20,10 +20,10 @@ namespace fbognini.Sdk
     {
         public HttpRequestOptions DefaultRequestOptions { get; } = new();
 
-        public const string SdkOptionName = "internal_25aI6plz";
-        public const string BaseAddressOptionName = "internal_iE97RqE3";
+        public const string SdkOptionName = "__fbognini_25aI6plz__";
+        public const string BaseAddressOptionName = "__fbognini_iE97RqE3__";
 
-        private async Task<HttpResponseMessage> SendMessage(HttpRequestMessage httpRequestMessage)
+        private async Task<HttpResponseMessage> SendMessage(HttpRequestMessage httpRequestMessage, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(httpRequestMessage, nameof(httpRequestMessage));
 
@@ -32,7 +32,7 @@ namespace fbognini.Sdk
 
             await SetAuthorization(httpRequestMessage);
 
-            var message = await client.SendAsync(httpRequestMessage);
+            var message = await client.SendAsync(httpRequestMessage, cancellationToken);
 
             return message;
         }
@@ -71,6 +71,27 @@ namespace fbognini.Sdk
             }
 
             return message;
+        }
+
+        private HttpContent? GetHttpContentContent<TRequest>(TRequest request, RequestOptions? requestOptions = null)
+        {
+            if (request is null)
+            {
+                return null;
+            }
+
+            if (request is HttpContent httpContent)
+            {
+                return httpContent;
+            }
+
+            // client.PostAsJsonAsync don't use Header Content-type application/json
+            if (requestOptions != null && requestOptions.Encoding != null)
+            {
+                return new StringContent(JsonSerializer.Serialize(request, options), requestOptions.Encoding, "application/json");
+            }
+
+            return new StringContentWithoutCharset(JsonSerializer.Serialize(request, options), "application/json");
         }
 
         private static void AddOptions(HttpRequestMessage message, HttpRequestOptions options)

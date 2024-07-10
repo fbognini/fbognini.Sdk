@@ -3,6 +3,7 @@ using fbognini.Sdk.Extensions;
 using fbognini.Sdk.Interfaces;
 using Microsoft.Extensions.Logging;
 using Polly;
+using Polly.Timeout;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -90,7 +91,6 @@ namespace fbognini.Sdk.Handlers
 
                 var message = await SendWithWatch();
 
-
                 loggingPropertys.IsSuccessStatusCode = message.IsSuccessStatusCode;
                 loggingPropertys.StatusCode = (int)message.StatusCode;
                 loggingPropertys.ContentType = message.Content.Headers.ContentType?.MediaType;
@@ -130,11 +130,15 @@ namespace fbognini.Sdk.Handlers
                     }
                 }
             }
-            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException timeoutException)
+            catch (TaskCanceledException)
             {
+                // Non posso sapere se si tratta di un annullo tramite CT oppure di un timeout perché sono all'interno di un message handler.
+                // Il client potrà gestire la casistica con:
+                // - PollyTimeout: catch (TimeoutRejectedException)
+                // - HttpClientTimeout: catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException timeoutException)
                 using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                 {
-                    logger.LogError(ex, "{Sdk} {Method} {RequestUrl} has timed out in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.RequestUrl, loggingPropertys.ElapsedMilliseconds);
+                    logger.LogInformation("{Sdk} {Method} {RequestUrl} has been cancelled (or has timed out) in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.RequestUrl, loggingPropertys.ElapsedMilliseconds);
                 }
 
                 throw;
