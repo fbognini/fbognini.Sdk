@@ -9,12 +9,12 @@ namespace fbognini.Sdk.Extensions
 {
     public static class ApiResultExtensions
     {
-        public static IList<T> ListOrEmpty<T>(ManagedApiResult<IList<T>> response)
+        public static IList<T>? ListOrEmpty<T>(ManagedApiResult<IList<T>> response)
         {
             return response.ToListOrEmpty();
         }
 
-        public static IList<T> ToListOrEmpty<T>(this ManagedApiResult<IList<T>> response)
+        public static IList<T>? ToListOrEmpty<T>(this ManagedApiResult<IList<T>> response)
         {
             if (response.IsSuccess)
             {

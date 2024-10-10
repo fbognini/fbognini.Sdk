@@ -13,7 +13,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\src\fbognini.Sdk\fbognini.Sdk.csproj" />
+    <ProjectReference Include="..\..\src\fbognini.Sdk.AspNetCore\fbognini.Sdk.AspNetCore.csproj" />
+    <!--<ProjectReference Include="..\..\src\fbognini.Sdk\fbognini.Sdk.csproj" />-->
   </ItemGroup>
 
 </Project>

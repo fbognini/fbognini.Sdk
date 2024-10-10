@@ -1,45 +1,38 @@
 ﻿using fbognini.Sdk.Exceptions;
 using fbognini.Sdk.Handlers;
 using fbognini.Sdk.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace fbognini.Sdk.Extensions
 {
     public static class HttpClientBuilderExtensions
     {
-        public static IHttpClientBuilder AddAuthenticationPolicy<TCurrentUserService>(this IHttpClientBuilder httpClientBuilder, Func<HttpResponseMessage, bool>? handle = null)
+        public static IHttpClientBuilder AddAuthenticationPolicy<TCurrentUserService>(this IHttpClientBuilder httpClientBuilder, Func<HttpResponseMessage, bool>? isUnauthorizedPredicate = null)
             where TCurrentUserService : ISdkCurrentUserService
         {
-            httpClientBuilder.Services.AddHttpContextAccessor();
+            httpClientBuilder.AddAuthenticationPolicy(sp => sp.GetService<TCurrentUserService>(), isUnauthorizedPredicate);
 
-            handle ??= r =>
-            {
-                var isUnauthorized = r.StatusCode == HttpStatusCode.Unauthorized;
-                return isUnauthorized;
-            };
+            return httpClientBuilder;
+        }
+
+        public static IHttpClientBuilder AddAuthenticationPolicy<TCurrentUserService>(this IHttpClientBuilder httpClientBuilder, Func<IServiceProvider, TCurrentUserService?> currentUserServicePredicate, Func<HttpResponseMessage, bool>? isUnauthorizedPredicate = null)
+            where TCurrentUserService : ISdkCurrentUserService
+        {
+            isUnauthorizedPredicate ??= r => r.StatusCode == HttpStatusCode.Unauthorized;
 
             httpClientBuilder.AddPolicyHandler((sp, request) =>
             {
-                var httpContext = sp.GetService<IHttpContextAccessor>()?.HttpContext;
-                var currentUserService = httpContext is not null ? httpContext.RequestServices.GetService<TCurrentUserService>() : sp.GetService<TCurrentUserService>();
+                var currentUserService = currentUserServicePredicate(sp);
                 if (currentUserService == null)
                 {
                     return Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
                 }
 
                 return Policy
-                    .Handle<ApiException>((ex) => handle(ex.HttpResponseMessage))
-                    .OrResult<HttpResponseMessage>(handle)
+                    .Handle<ApiException>((ex) => isUnauthorizedPredicate(ex.HttpResponseMessage))
+                    .OrResult<HttpResponseMessage>(isUnauthorizedPredicate)
                     .RetryAsync(1, async (_, __, context) =>
                     {
                         var accessToken = await currentUserService.ReloadAccessToken();
