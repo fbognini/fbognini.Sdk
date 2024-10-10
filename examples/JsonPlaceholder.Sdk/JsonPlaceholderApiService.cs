@@ -11,15 +11,15 @@ namespace JsonPlaceholder.Sdk
 
     internal class JsonPlaceholderApiService : BaseApiService, IJsonPlaceholderApiService
     {
-        public JsonPlaceholderApiService(HttpClient client, ILogger<JsonPlaceholderApiService> logger)
-            : base(client, logger, null)
+        public JsonPlaceholderApiService(HttpClient client)
+            : base(client, null)
         {
             client.BaseAddress = new Uri($"https://jsonplaceholder.typicode.com/");
         }
 
         public Task<List<Post>> GetPosts()
         {
-            return GetApi<List<Post>>("posts");
+            return GetApiAsync<List<Post>>("posts");
         }
     }
 }

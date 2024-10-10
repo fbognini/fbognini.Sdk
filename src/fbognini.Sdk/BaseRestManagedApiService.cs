@@ -27,14 +27,14 @@ namespace fbognini.Sdk
 
         #region GET
 
-        [Obsolete("Please use SendApiAsync()")]
+        [Obsolete("Please use GetApiResultAsync()")]
         protected Task<ManagedApiResult> GetApiResult(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => GetApiResultAsync(url, requestOptions, cancellationToken);
         protected async Task<ManagedApiResult> GetApiResultAsync(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Get, url, requestOptions), cancellationToken);
         }
 
-        [Obsolete("Please use SendApiAsync()")]
+        [Obsolete("Please use GetApiResultAsync()")]
         protected Task<ManagedApiResult<T>> GetApiResult<T>(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => GetApiResultAsync<T>(url, requestOptions, cancellationToken);
         protected async Task<ManagedApiResult<T>> GetApiResultAsync<T>(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
@@ -45,14 +45,14 @@ namespace fbognini.Sdk
 
         #region DELETE
 
-        [Obsolete("Please use SendApiAsync()")]
+        [Obsolete("Please use DeleteApiResultAsync()")]
         protected Task<ManagedApiResult> DeleteApiResult(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => DeleteApiResultAsync(url, requestOptions, cancellationToken);
         protected async Task<ManagedApiResult> DeleteApiResultAsync(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Delete, url, requestOptions), cancellationToken);
         }
 
-        [Obsolete("Please use SendApiAsync()")]
+        [Obsolete("Please use DeleteApiResultAsync()")]
         protected Task<ManagedApiResult<T>> DeleteApiResult<T>(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => DeleteApiResultAsync<T>(url, requestOptions, cancellationToken);    
         protected async Task<ManagedApiResult<T>> DeleteApiResultAsync<T>(string url, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
@@ -63,14 +63,19 @@ namespace fbognini.Sdk
 
         #region POST
 
-        [Obsolete("Please use SendApiAsync()")]
+        protected async Task<ManagedApiResult> PostApiResultAsync(string url, HttpContent? content = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions), cancellationToken);
+        }
+
+        [Obsolete("Please use PostApiResultAsync()")]
         protected Task<ManagedApiResult<T>> PostApiResult<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => PostApiResultAsync<T>(url, content, requestOptions, cancellationToken);
         protected async Task<ManagedApiResult<T>> PostApiResultAsync<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             return await ProcessApiResult<T>(BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions), cancellationToken);
         }
 
-        [Obsolete("Please use SendApiAsync()")]
+        [Obsolete("Please use PostApiResultAsync()")]
         protected Task<ManagedApiResult> PostApiResult<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => PostApiResultAsync<TRequest>(url, request, requestOptions, cancellationToken);
         protected async Task<ManagedApiResult> PostApiResultAsync<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
@@ -78,7 +83,7 @@ namespace fbognini.Sdk
             return await ProcessApiResult(BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions), cancellationToken);
         }
 
-        [Obsolete("Please use SendApiAsync()")]
+        [Obsolete("Please use PostApiResultAsync()")]
         protected Task<ManagedApiResult<T>> PostApiResult<T, TRequest>(string url, TRequest request, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => PostApiResultAsync<T, TRequest>(url, request, requestOptions, cancellationToken);
         protected async Task<ManagedApiResult<T>> PostApiResultAsync<T, TRequest>(string url, TRequest request, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {

@@ -64,6 +64,11 @@ namespace fbognini.Sdk
 
         #region POST
 
+        protected async Task<HttpResponseMessage> PostApiAsync(string url, HttpContent? content = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            return await ProcessApi(BuildHttpRequestMessage(HttpMethod.Post, url, content, requestOptions), cancellationToken);
+        }
+
         [Obsolete("Please use PostApiAsync<T>()")]
         protected Task<T> PostApi<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default) => PostApiAsync<T>(url, content, requestOptions, cancellationToken);
         protected async Task<T> PostApiAsync<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
