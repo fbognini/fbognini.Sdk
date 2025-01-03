@@ -19,7 +19,16 @@ namespace fbognini.Sdk.Extensions
             httpClientBuilder.Services.AddHttpContextAccessor();
 
             httpClientBuilder.AddAuthenticationPolicy(
-                sp => sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.RequestServices.GetService<TCurrentUserService>(), 
+                sp =>
+                {
+                    var httpContext = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
+                    if (httpContext is not null)
+                    {
+                        return httpContext.RequestServices.GetService<TCurrentUserService>();
+                    }
+
+                    return sp.GetService<TCurrentUserService>();
+                },
                 handle);
 
             return httpClientBuilder;
