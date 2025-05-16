@@ -103,12 +103,9 @@ namespace fbognini.Sdk.Handlers
                 loggingPropertys.ResponseHeaders = LoggingHandler.GetResponseHeaders(message.Headers).ToList();
 
                 var level = message.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning;
-                if (logger.IsEnabled(level))
+                using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                 {
-                    using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
-                    {
-                        logger.Log(level, "{Sdk} {Method} {RequestUrl} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.RequestUrl, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
-                    }
+                    logger.Log(level, "{Sdk} {Method} {RequestUrl} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.RequestUrl, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
                 }
 
                 return message;
