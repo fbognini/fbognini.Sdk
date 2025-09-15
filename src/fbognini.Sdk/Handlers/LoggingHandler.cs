@@ -25,6 +25,7 @@ namespace fbognini.Sdk.Handlers
         public string Method { get; init; } = string.Empty;
         public string RequestUrl { get; init; } = string.Empty;
         public string? RawRequest { get; set; }
+        public IEnumerable<KeyValuePair<string, string>>? RequestHeaders { get; set; }
         public bool? IsSuccessStatusCode { get; set; }
         public int? StatusCode { get; set; }
         public string? ContentType { get; set; }
@@ -40,6 +41,7 @@ namespace fbognini.Sdk.Handlers
             [nameof(Method)] = Method,
             [nameof(RequestUrl)] = RequestUrl,
             [nameof(RawRequest)] = RawRequest,
+            [nameof(RequestHeaders)] = RequestHeaders,
             [nameof(IsSuccessStatusCode)] = IsSuccessStatusCode,
             [nameof(StatusCode)] = StatusCode,
             [nameof(ContentType)] = ContentType,
@@ -78,7 +80,8 @@ namespace fbognini.Sdk.Handlers
                 BaseAddress = LoggingHandler.GetFromOptions(request, BaseApiService.BaseAddressOptionName),
                 Method = request.Method.Method,
                 RequestUrl = request.RequestUri!.OriginalString,
-                RawRequest = await LoggingHandler.GetRawRequest(request.Content)
+                RawRequest = await LoggingHandler.GetRawRequest(request.Content),
+                RequestHeaders = LoggingHandler.GetHeaders(request.Headers)
             };
 
             try
@@ -100,7 +103,7 @@ namespace fbognini.Sdk.Handlers
                     loggingPropertys.RawResponse = await message.Content.ReadAsStringAsync(cancellationToken);
                 }
 
-                loggingPropertys.ResponseHeaders = LoggingHandler.GetResponseHeaders(message.Headers).ToList();
+                loggingPropertys.ResponseHeaders = LoggingHandler.GetHeaders(message.Headers);
 
                 var level = message.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning;
                 using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
@@ -173,22 +176,22 @@ namespace fbognini.Sdk.Handlers
             return null;
         }
 
-        private static IEnumerable<KeyValuePair<string, string>> GetResponseHeaders(HttpResponseHeaders httpResponseHeaders)
+        private static List<KeyValuePair<string, string>> GetHeaders(HttpHeaders httpHeaders)
         {
-            var baseHeaders = httpResponseHeaders.GetType().GetProperties().Select(x => x.Name!).ToList();
-            baseHeaders.Add("Set-Cookie");
-            baseHeaders.Add("Cache-Control");
+            var baseHeaders = httpHeaders.GetType().GetProperties().Select(x => x.Name!).ToList();
             baseHeaders.Add("X-AspNet-Version");
-            baseHeaders.Add("X-Powered-By");
-            baseHeaders.Add("Strict-Transport-Security");
             baseHeaders.Add("X-Content-Type-Options");
             baseHeaders.Add("X-Frame-Options");
+            baseHeaders.Add("X-Powered-By");
             baseHeaders.Add("X-XSS-Protection");
+            baseHeaders.Add("Cache-Control");
+            baseHeaders.Add("Set-Cookie");
+            baseHeaders.Add("Strict-Transport-Security");
             baseHeaders.Add("Transfer-Encoding");
-            var headers = httpResponseHeaders
+            var headers = httpHeaders
                 .Where(x => baseHeaders.Contains(x.Key) == false && x.Key.StartsWith("Access-Control") == false).ToList();
 
-            return headers.SelectMany(x => x.Value, (header, value) => new KeyValuePair<string, string>(header.Key, value));
+            return headers.SelectMany(x => x.Value, (header, value) => new KeyValuePair<string, string>(header.Key, value)).ToList();
         }
 
     }
