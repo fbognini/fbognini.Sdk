@@ -1,4 +1,5 @@
-﻿using fbognini.Sdk.Extensions;
+﻿using Correlate.DependencyInjection;
+using fbognini.Sdk.Extensions;
 using fbognini.Sdk.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +14,8 @@ namespace JsonPlaceholder.Sdk
         public static IServiceCollection AddJsonPlaceholderApiService(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddHttpClient<IJsonPlaceholderApiService, JsonPlaceholderApiService>()
-                .AddAuthenticationPolicy<ISdkCurrentUserService>();
+                .AddLogging()
+                .CorrelateRequests();
 
             return services;
         }
