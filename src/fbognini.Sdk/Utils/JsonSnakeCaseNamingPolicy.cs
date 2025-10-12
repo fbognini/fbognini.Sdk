@@ -1,6 +1,9 @@
 ﻿namespace System.Text.Json
 {
     // Taken from: https://github.com/J0rgeSerran0/JsonNamingPolicy/blob/master/JsonSnakeCaseNamingPolicy.cs
+#if NET7_0_OR_GREATER
+    [Obsolete("Please use System.Text.Json.JsonNamingPolicy.SnakeCaseLower")]
+#endif
     public class JsonSnakeCaseNamingPolicy : JsonNamingPolicy
     {
         private readonly string _separator = "_";
