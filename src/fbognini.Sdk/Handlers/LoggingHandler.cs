@@ -23,12 +23,14 @@ namespace fbognini.Sdk.Handlers
         public string Sdk { get; init; } = string.Empty;
         public string BaseAddress { get; init; } = string.Empty;
         public string Method { get; init; } = string.Empty;
-        public string RequestUrl { get; init; } = string.Empty;
+        public string Query { get; init; } = string.Empty;
+        public DateTime RequestDate { get; set; }
         public string? RawRequest { get; set; }
         public IEnumerable<KeyValuePair<string, string>>? RequestHeaders { get; set; }
         public bool? IsSuccessStatusCode { get; set; }
         public int? StatusCode { get; set; }
         public string? ContentType { get; set; }
+        public DateTime? ResponseDate { get; set; }
         public string? RawResponse { get; set; }
         public IEnumerable<KeyValuePair<string, string>>? ResponseHeaders { get; set; }
         public double? ElapsedMilliseconds { get; set; }
@@ -39,12 +41,14 @@ namespace fbognini.Sdk.Handlers
             [nameof(Sdk)] = Sdk,
             [nameof(BaseAddress)] = BaseAddress,
             [nameof(Method)] = Method,
-            [nameof(RequestUrl)] = RequestUrl,
+            [nameof(Query)] = Query,
+            [nameof(RequestDate)] = RequestDate,
             [nameof(RawRequest)] = RawRequest,
             [nameof(RequestHeaders)] = RequestHeaders,
             [nameof(IsSuccessStatusCode)] = IsSuccessStatusCode,
             [nameof(StatusCode)] = StatusCode,
             [nameof(ContentType)] = ContentType,
+            [nameof(ResponseDate)] = ResponseDate,
             [nameof(RawResponse)] = RawResponse,
             [nameof(ResponseHeaders)] = ResponseHeaders,
             [nameof(ElapsedMilliseconds)] = ElapsedMilliseconds,
@@ -79,7 +83,8 @@ namespace fbognini.Sdk.Handlers
                 Sdk = LoggingHandler.GetFromOptions(request, BaseApiService.SdkOptionName),
                 BaseAddress = LoggingHandler.GetFromOptions(request, BaseApiService.BaseAddressOptionName),
                 Method = request.Method.Method,
-                RequestUrl = request.RequestUri!.OriginalString,
+                Query = request.RequestUri!.OriginalString,
+                ResponseDate = DateTime.UtcNow,
                 RawRequest = await LoggingHandler.GetRawRequest(request.Content),
                 RequestHeaders = LoggingHandler.GetHeaders(request.Headers)
             };
@@ -89,7 +94,7 @@ namespace fbognini.Sdk.Handlers
 
                 using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                 {
-                    logger.LogInformation("{Sdk} requesting {Method} {RequestUrl}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.RequestUrl);
+                    logger.LogInformation("{Sdk} requesting {Method} {Query}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query);
                 }
 
                 var message = await SendWithWatch();
@@ -108,25 +113,21 @@ namespace fbognini.Sdk.Handlers
                 var level = message.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning;
                 using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                 {
-                    logger.Log(level, "{Sdk} {Method} {RequestUrl} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.RequestUrl, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
+                    logger.Log(level, "{Sdk} {Method} {Query} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
                 }
 
                 return message;
 
                 async Task<HttpResponseMessage> SendWithWatch()
                 {
-                    var stopwatch = new Stopwatch();
-
                     try
                     {
-                        stopwatch.Start();
-
                         return await base.SendAsync(request, cancellationToken);
                     }
                     finally
                     {
-                        stopwatch.Stop();
-                        loggingPropertys.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+                        loggingPropertys.ResponseDate = DateTime.UtcNow;
+                        loggingPropertys.ElapsedMilliseconds = (loggingPropertys.ResponseDate.Value - loggingPropertys.RequestDate).TotalMilliseconds;
                     }
                 }
             }
@@ -138,7 +139,7 @@ namespace fbognini.Sdk.Handlers
                 // - HttpClientTimeout: catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException timeoutException)
                 using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                 {
-                    logger.LogInformation("{Sdk} {Method} {RequestUrl} has been cancelled (or has timed out) in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.RequestUrl, loggingPropertys.ElapsedMilliseconds);
+                    logger.LogInformation("{Sdk} {Method} {Query} has been cancelled (or has timed out) in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query, loggingPropertys.ElapsedMilliseconds);
                 }
 
                 throw;
@@ -147,7 +148,7 @@ namespace fbognini.Sdk.Handlers
             {
                 using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                 {
-                    logger.LogError(ex, "{Sdk} failed to ask for {Method} {RequestUrl}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.RequestUrl);
+                    logger.LogError(ex, "{Sdk} failed to ask for {Method} {Query}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query);
                 }
 
                 throw;
