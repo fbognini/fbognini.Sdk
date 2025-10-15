@@ -94,6 +94,27 @@ namespace fbognini.Sdk
 
         #endregion
 
+        #region PATCH
+
+        protected async Task<T> PatchApiAsync<T>(string url, HttpContent? content = null, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            return await ProcessApi<T>(BuildHttpRequestMessage(HttpMethod.Patch, url, content, requestOptions), cancellationToken);
+        }
+
+        protected async Task<HttpResponseMessage> PatchApiAsync<TRequest>(string url, TRequest request, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var content = GetHttpContentContent(request, requestOptions);
+            return await ProcessApi(BuildHttpRequestMessage(HttpMethod.Patch, url, content, requestOptions), cancellationToken);
+        }
+
+        protected async Task<T> PatchApiAsync<T, TRequest>(string url, TRequest request, RequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
+        {
+            var content = GetHttpContentContent(request, requestOptions);
+            return await ProcessApi<T>(BuildHttpRequestMessage(HttpMethod.Patch, url, content, requestOptions), cancellationToken);
+        }
+
+        #endregion
+
         #region PUT
 
         [Obsolete("Please use PutApiAsync<T>()")]
