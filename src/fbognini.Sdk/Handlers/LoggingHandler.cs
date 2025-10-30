@@ -84,7 +84,7 @@ namespace fbognini.Sdk.Handlers
                 BaseAddress = LoggingHandler.GetFromOptions(request, BaseApiService.BaseAddressOptionName),
                 Method = request.Method.Method,
                 Query = request.RequestUri!.OriginalString,
-                ResponseDate = DateTime.UtcNow,
+                RequestDate = DateTime.UtcNow,
                 RawRequest = await LoggingHandler.GetRawRequest(request.Content),
                 RequestHeaders = LoggingHandler.GetHeaders(request.Headers)
             };

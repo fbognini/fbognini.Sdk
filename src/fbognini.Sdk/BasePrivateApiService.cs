@@ -59,10 +59,7 @@ namespace fbognini.Sdk
 
             if (requestOptions.Headers != null)
             {
-                foreach (var header in requestOptions.Headers)
-                {
-                    message.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                }
+                requestOptions.Headers.CopyTo(message.Headers);
             }
 
             if (requestOptions.Options != null)
