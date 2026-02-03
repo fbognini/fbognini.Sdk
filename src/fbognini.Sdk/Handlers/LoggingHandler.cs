@@ -61,6 +61,7 @@ namespace fbognini.Sdk.Handlers
 
         private static readonly List<string> SerializableContentType = new()
         {
+            "application/hal+json",
             System.Net.Mime.MediaTypeNames.Application.Json,
             System.Net.Mime.MediaTypeNames.Application.Soap,
             System.Net.Mime.MediaTypeNames.Application.Xml,
@@ -91,7 +92,6 @@ namespace fbognini.Sdk.Handlers
 
             try
             {
-
                 using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                 {
                     logger.LogInformation("{Sdk} requesting {Method} {Query}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query);
