@@ -94,7 +94,14 @@ namespace fbognini.Sdk.Handlers
             {
                 using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                 {
-                    logger.LogInformation("{Sdk} requesting {Method} {Query}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query);
+                    if (string.IsNullOrWhiteSpace(loggingPropertys.Sdk))
+                    {
+                        logger.LogInformation("Requesting {Method} {Query}", loggingPropertys.Method, loggingPropertys.Query);
+                    }
+                    else
+                    {
+                        logger.LogInformation("{Sdk} requesting {Method} {Query}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query);
+                    }
                 }
 
                 var message = await SendWithWatch();
@@ -113,7 +120,14 @@ namespace fbognini.Sdk.Handlers
                 var level = message.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning;
                 using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                 {
-                    logger.Log(level, "{Sdk} {Method} {Query} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
+                    if (string.IsNullOrWhiteSpace(loggingPropertys.Sdk))
+                    {
+                        logger.Log(level, "{Method} {Query} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Method, loggingPropertys.Query, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
+                    }
+                    else
+                    {
+                        logger.Log(level, "{Sdk} {Method} {Query} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
+                    }
                 }
 
                 return message;
