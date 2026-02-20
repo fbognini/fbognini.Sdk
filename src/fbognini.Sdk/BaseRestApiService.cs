@@ -150,7 +150,7 @@ namespace fbognini.Sdk
         private async Task<T> ProcessApi<T>(HttpRequestMessage message, CancellationToken cancellationToken)
         {
             var response = await ProcessApi(message, cancellationToken);
-            var json = await response.Content.ReadFromJsonAsync<T>(options, cancellationToken: cancellationToken);
+            var json = await response.Content.ReadFromJsonAsync<T>(_jsonSerializerOptions, cancellationToken: cancellationToken);
             return json!;
         }
     }

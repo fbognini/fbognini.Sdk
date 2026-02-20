@@ -20,6 +20,7 @@ namespace fbognini.Sdk
     {
         public HttpRequestOptions DefaultRequestOptions { get; } = new();
 
+        public const string MinimumLogLevelName = "__fbognini_ByNtcKDQ__";
         public const string SdkOptionName = "__fbognini_25aI6plz__";
         public const string BaseAddressOptionName = "__fbognini_iE97RqE3__";
 
@@ -49,7 +50,6 @@ namespace fbognini.Sdk
                 Content = content
             };
 
-
             AddOptions(message, DefaultRequestOptions);
 
             if (requestOptions == null)
@@ -57,15 +57,10 @@ namespace fbognini.Sdk
                 return message;
             }
 
-            if (requestOptions.Headers != null)
-            {
-                requestOptions.Headers.CopyTo(message.Headers);
-            }
+            requestOptions.Headers.CopyTo(message.Headers);
 
-            if (requestOptions.Options != null)
-            {
-                AddOptions(message, requestOptions.Options);    
-            }
+            requestOptions.Options.TryAdd(MinimumLogLevelName, requestOptions.OverrideMinimumLogLevel ?? MinimumLogLevel);
+            AddOptions(message, requestOptions.Options);
 
             return message;
         }
@@ -85,10 +80,10 @@ namespace fbognini.Sdk
             // client.PostAsJsonAsync don't use Header Content-type application/json
             if (requestOptions != null && requestOptions.Encoding != null)
             {
-                return new StringContent(JsonSerializer.Serialize(request, options), requestOptions.Encoding, "application/json");
+                return new StringContent(JsonSerializer.Serialize(request, _jsonSerializerOptions), requestOptions.Encoding, "application/json");
             }
 
-            return new StringContentWithoutCharset(JsonSerializer.Serialize(request, options), "application/json");
+            return new StringContentWithoutCharset(JsonSerializer.Serialize(request, _jsonSerializerOptions), "application/json");
         }
 
         private static void AddOptions(HttpRequestMessage message, HttpRequestOptions options)

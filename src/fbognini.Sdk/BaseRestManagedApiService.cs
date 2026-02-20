@@ -145,7 +145,7 @@ namespace fbognini.Sdk
             var response = await SendMessage(message, cancellationToken);
             if (response.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadFromJsonAsync<T>(options, cancellationToken: cancellationToken);
+                var json = await response.Content.ReadFromJsonAsync<T>(_jsonSerializerOptions, cancellationToken: cancellationToken);
                 return new ManagedApiResult<T>
                 {
                     IsSuccess = true,

@@ -57,7 +57,7 @@ namespace fbognini.Sdk.Handlers
 
     public class LoggingHandler : DelegatingHandler
     {
-        private readonly ILogger<LoggingHandler> logger;
+        private readonly ILogger<LoggingHandler> _logger;
 
         private static readonly List<string> SerializableContentType = new()
         {
@@ -73,34 +73,38 @@ namespace fbognini.Sdk.Handlers
 
         public LoggingHandler(ILogger<LoggingHandler> logger)
         {
-            this.logger = logger;
+            _logger = logger;
         }
-
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            var minimumLogLevel = GetFromOptions<LogLevel>(request, BaseApiService.MinimumLogLevelName)!;
+
             var loggingPropertys = new LoggingProperys
             {
-                Sdk = LoggingHandler.GetFromOptions(request, BaseApiService.SdkOptionName),
-                BaseAddress = LoggingHandler.GetFromOptions(request, BaseApiService.BaseAddressOptionName),
+                Sdk = GetFromOptions<string>(request, BaseApiService.SdkOptionName)!,
+                BaseAddress = GetFromOptions<string>(request, BaseApiService.BaseAddressOptionName)!,
                 Method = request.Method.Method,
                 Query = request.RequestUri!.OriginalString,
                 RequestDate = DateTime.UtcNow,
-                RawRequest = await LoggingHandler.GetRawRequest(request.Content),
-                RequestHeaders = LoggingHandler.GetHeaders(request.Headers)
+                RawRequest = await GetRawRequest(request.Content),
+                RequestHeaders = GetHeaders(request.Headers)
             };
 
             try
             {
-                using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
+                if (LogLevel.Information >= minimumLogLevel)
                 {
-                    if (string.IsNullOrWhiteSpace(loggingPropertys.Sdk))
+                    using (_logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                     {
-                        logger.LogInformation("Requesting {Method} {Query}", loggingPropertys.Method, loggingPropertys.Query);
-                    }
-                    else
-                    {
-                        logger.LogInformation("{Sdk} requesting {Method} {Query}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query);
+                        if (string.IsNullOrWhiteSpace(loggingPropertys.Sdk))
+                        {
+                            _logger.LogInformation("Requesting {Method} {Query}", loggingPropertys.Method, loggingPropertys.Query);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("{Sdk} requesting {Method} {Query}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query);
+                        }
                     }
                 }
 
@@ -118,15 +122,18 @@ namespace fbognini.Sdk.Handlers
                 loggingPropertys.ResponseHeaders = LoggingHandler.GetHeaders(message.Headers);
 
                 var level = message.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning;
-                using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
+                if (level >= minimumLogLevel)
                 {
-                    if (string.IsNullOrWhiteSpace(loggingPropertys.Sdk))
+                    using (_logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                     {
-                        logger.Log(level, "{Method} {Query} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Method, loggingPropertys.Query, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
-                    }
-                    else
-                    {
-                        logger.Log(level, "{Sdk} {Method} {Query} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
+                        if (string.IsNullOrWhiteSpace(loggingPropertys.Sdk))
+                        {
+                            _logger.Log(level, "{Method} {Query} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Method, loggingPropertys.Query, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
+                        }
+                        else
+                        {
+                            _logger.Log(level, "{Sdk} {Method} {Query} responded {StatusCode} in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query, loggingPropertys.StatusCode, loggingPropertys.ElapsedMilliseconds);
+                        }
                     }
                 }
 
@@ -151,25 +158,25 @@ namespace fbognini.Sdk.Handlers
                 // Il client potrà gestire la casistica con:
                 // - PollyTimeout: catch (TimeoutRejectedException)
                 // - HttpClientTimeout: catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException timeoutException)
-                using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
+                using (_logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                 {
-                    logger.LogInformation("{Sdk} {Method} {Query} has been cancelled (or has timed out) in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query, loggingPropertys.ElapsedMilliseconds);
+                    _logger.LogInformation("{Sdk} {Method} {Query} has been cancelled (or has timed out) in {ElapsedMilliseconds}ms", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query, loggingPropertys.ElapsedMilliseconds);
                 }
 
                 throw;
             }
             catch (Exception ex)
             {
-                using (logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
+                using (_logger.BeginScope(loggingPropertys.ToLoggingDictionary()))
                 {
-                    logger.LogError(ex, "{Sdk} failed to ask for {Method} {Query}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query);
+                    _logger.LogError(ex, "{Sdk} failed to ask for {Method} {Query}", loggingPropertys.Sdk, loggingPropertys.Method, loggingPropertys.Query);
                 }
 
                 throw;
             }
         }
 
-        private static string GetFromOptions(HttpRequestMessage request, string key) => request.Options.TryGetValue(new HttpRequestOptionsKey<string>(key), out var sdk) ? sdk : string.Empty;
+        private static T? GetFromOptions<T>(HttpRequestMessage request, string key) => request.Options.TryGetValue(new HttpRequestOptionsKey<T>(key), out var sdk) ? sdk : default(T);
 
         private static async Task<string?> GetRawRequest(HttpContent? content)
         {
