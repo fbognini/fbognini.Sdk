@@ -2,8 +2,8 @@
 
 	<PropertyGroup>
 		<PackageId>fbognini.Sdk.AspNetCore</PackageId>
-		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
-		<Version>1.0.1</Version>
+		<TargetFrameworks>net6.0;net7.0;net8.0;net10.0</TargetFrameworks>
+		<Version>1.1.0</Version>
 		<Authors>Francesco Bognini</Authors>
 		<Company>Francesco Bognini</Company>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

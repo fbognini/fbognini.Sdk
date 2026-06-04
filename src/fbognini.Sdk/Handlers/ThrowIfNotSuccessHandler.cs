@@ -1,14 +1,4 @@
 ﻿using fbognini.Sdk.Exceptions;
-using fbognini.Sdk.Extensions;
-using fbognini.Sdk.Interfaces;
-using Polly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace fbognini.Sdk.Handlers
 {

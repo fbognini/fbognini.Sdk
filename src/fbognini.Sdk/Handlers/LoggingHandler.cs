@@ -1,19 +1,7 @@
-﻿using fbognini.Sdk.Exceptions;
-using fbognini.Sdk.Extensions;
-using fbognini.Sdk.Interfaces;
-using Microsoft.Extensions.Logging;
-using Polly;
-using Polly.Timeout;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.Http;
+﻿using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace fbognini.Sdk.Handlers
 {
@@ -65,6 +53,7 @@ namespace fbognini.Sdk.Handlers
             System.Net.Mime.MediaTypeNames.Application.Json,
             System.Net.Mime.MediaTypeNames.Application.Soap,
             System.Net.Mime.MediaTypeNames.Application.Xml,
+            "text/json",
             System.Net.Mime.MediaTypeNames.Text.Html,
             System.Net.Mime.MediaTypeNames.Text.Plain,
             System.Net.Mime.MediaTypeNames.Text.RichText,

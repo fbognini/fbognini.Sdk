@@ -23,16 +23,21 @@ namespace fbognini.Sdk.Utils
 
             options ??= new QueryStringBuilderFromJsonOptions();
 
-            var dict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(request, options.JsonSerializerOptions));
+            var dict = JsonSerializer.Deserialize<Dictionary<string, JsonElement?>>(JsonSerializer.Serialize(request, options.JsonSerializerOptions));
             if (dict == null || dict.Count == 0)
             {
                 return path;
             }
 
             var queryParams = new List<string>();
-            foreach (var kvp in dict)
+            foreach (var kvp in dict.Where(x => x.Value.HasValue))
             {
-                BuildQueryString(kvp.Key, kvp.Value, queryParams, options);
+                BuildQueryString(kvp.Key, kvp.Value!.Value, queryParams, options);
+            }
+
+            if (queryParams.Count == 0)
+            {
+                return path;
             }
 
             var queryString = string.Join("&", queryParams);
@@ -43,6 +48,8 @@ namespace fbognini.Sdk.Utils
         {
             switch (jsonElement.ValueKind)
             {
+                case JsonValueKind.Null:
+                    break;
                 case JsonValueKind.Object:
                     foreach (var prop in jsonElement.EnumerateObject())
                     {

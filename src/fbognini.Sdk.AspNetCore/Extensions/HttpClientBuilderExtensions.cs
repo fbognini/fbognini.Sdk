@@ -1,13 +1,6 @@
-﻿using fbognini.Sdk.Exceptions;
-using fbognini.Sdk.Interfaces;
+﻿using fbognini.Sdk.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Polly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace fbognini.Sdk.Extensions
 {

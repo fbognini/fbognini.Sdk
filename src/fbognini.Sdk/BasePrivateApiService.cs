@@ -1,17 +1,5 @@
-﻿using fbognini.Sdk.Exceptions;
-using fbognini.Sdk.Extensions;
-using fbognini.Sdk.Interfaces;
+﻿using fbognini.Sdk.Extensions;
 using fbognini.Sdk.Models;
-using Microsoft.Extensions.Logging;
-using Polly;
-using Polly.Retry;
-using System;
-using System.Diagnostics;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 
 namespace fbognini.Sdk
