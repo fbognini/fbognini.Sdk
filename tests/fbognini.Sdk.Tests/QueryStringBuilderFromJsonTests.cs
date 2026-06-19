@@ -85,7 +85,7 @@ public class QueryStringBuilderFromJsonTests
     [Fact]
     public void InlineNestedObjects_option_flattens_every_nested_object()
     {
-        var options = new QueryStringBuilderFromJsonOptions { InlineNestedObjects = true };
+        var options = new QueryStringBuilderFromJsonOptions { ObjectFormatterType = ObjectFormatterType.Inline };
 
         var result = new PlainNestedRequest { Q = "hello", Paging = new Paging { PageSize = 10, Start = "20" } }
             .ToQueryString("", options);
@@ -104,7 +104,7 @@ public class QueryStringBuilderFromJsonTests
     [Fact]
     public void Arrays_use_index_when_option_is_set()
     {
-        var options = new QueryStringBuilderFromJsonOptions { UseIndexForArrays = true };
+        var options = new QueryStringBuilderFromJsonOptions { ArrayFormatterType = ArrayFormatterType.UseIndex };
 
         var result = new ArrayRequest { Tags = new List<string> { "a", "b" } }.ToQueryString("", options);
 
